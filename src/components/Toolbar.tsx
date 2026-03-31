@@ -1,64 +1,13 @@
-import { useState } from 'react';
-import type { DrawingTool } from '../types/canvas';
-import './Toolbar.css';
-
 interface ToolbarProps {
   onClear: () => void;
-  onResetViewport: () => void;
-  onToolChange?: (tool: DrawingTool) => void;
-  onColorChange?: (color: string) => void;
 }
 
-export function Toolbar({ onClear, onResetViewport, onToolChange, onColorChange }: ToolbarProps) {
-  const [tool, setTool] = useState<DrawingTool>('pen');
-  const [color, setColor] = useState('#000000');
-
-  const handleToolChange = (newTool: DrawingTool) => {
-    setTool(newTool);
-    onToolChange?.(newTool);
-  };
-
-  const handleColorChange = (newColor: string) => {
-    setColor(newColor);
-    onColorChange?.(newColor);
-  };
-
+export function Toolbar({ onClear }: ToolbarProps) {
   return (
-    <div className="toolbar">
-      <div className="toolbar-section">
-        <button
-          className={tool === 'pen' ? 'active' : ''}
-          onClick={() => handleToolChange('pen')}
-          title="Pen Tool"
-        >
-          ✏️ Pen
-        </button>
-        <button
-          className={tool === 'eraser' ? 'active' : ''}
-          onClick={() => handleToolChange('eraser')}
-          title="Eraser Tool"
-        >
-          🧹 Eraser
-        </button>
-      </div>
-
-      <div className="toolbar-section">
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => handleColorChange(e.target.value)}
-          title="Color Picker"
-        />
-      </div>
-
-      <div className="toolbar-section">
-        <button onClick={onClear} title="Clear Canvas">
-          🗑️ Clear
-        </button>
-        <button onClick={onResetViewport} title="Reset View">
-          🎯 Reset View
-        </button>
-      </div>
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 flex gap-2 px-4 py-2 bg-white rounded-lg shadow-lg z-[100]">
+      <button onClick={onClear} title="Clear Canvas" className="px-3 py-2 border border-gray-200 bg-white rounded cursor-pointer text-sm hover:bg-gray-100">
+        🗑️ Clear
+      </button>
     </div>
   );
 }

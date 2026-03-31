@@ -1,42 +1,32 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect  } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
 import { useCanvasViewport } from '../hooks/useCanvasViewport';
 import { useCanvasDrawing } from '../hooks/useCanvasDrawing';
+import { useCanvasStore } from '../store/canvasStore';
 import { toTrueX, toTrueY } from '../utils/coordinates';
-import '../styles/canvas.css';
 
-interface InfiniteCanvasProps {
-  onClear?: () => void;
-  onResetViewport?: () => void;
+export interface InfiniteCanvasRef {
+  clear: () => void;
+  resetViewport: () => void;
 }
 
-export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps) {
+export function InfiniteCanvas() {
   const { canvasRef, contextRef } = useCanvas({ backgroundColor: '#fff' });
-  const { viewport, pan, zoom, reset } = useCanvasViewport();
+  const { viewport, pan, zoom } = useCanvasViewport();
   const drawing = useCanvasDrawing(contextRef, viewport);
+  const drawings = useCanvasStore((state) => state.drawings);
 
-  // Track previous position for delta calculations
   const prevPositionRef = useRef<{ x: number; y: number } | null>(null);
   const mouseStateRef = useRef({
     leftDown: false,
     rightDown: false,
   });
 
-  // Expose clear and reset methods via ref for parent components
+  // Redraw when drawings or viewport change (e.g., after clear)
   useEffect(() => {
-    if (onClear) {
-      // Store clear function in a way parent can call it
-      (canvasRef.current as any)?.addEventListener('clear', drawing.clear);
-    }
-  }, [drawing.clear, onClear, canvasRef]);
+    drawing.redrawAll();
+  }, [drawings, viewport, drawing]);
 
-  useEffect(() => {
-    if (onResetViewport) {
-      reset();
-    }
-  }, [onResetViewport, reset]);
-
-  // Mouse down handler
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -45,18 +35,14 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
       e.preventDefault();
 
       if (e.button === 0) {
-        // Left click - draw
         mouseStateRef.current.leftDown = true;
-        mouseStateRef.current.rightDown = false;
         const trueX = toTrueX(e.pageX, viewport);
         const trueY = toTrueY(e.pageY, viewport);
         drawing.startDrawing(trueX, trueY);
       }
 
       if (e.button === 2) {
-        // Right click - pan
         mouseStateRef.current.rightDown = true;
-        mouseStateRef.current.leftDown = false;
       }
 
       prevPositionRef.current = { x: e.pageX, y: e.pageY };
@@ -64,9 +50,8 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
 
     canvas.addEventListener('mousedown', handleMouseDown);
     return () => canvas.removeEventListener('mousedown', handleMouseDown);
-  }, [viewport, drawing]);
+  }, [canvasRef, viewport, drawing]);
 
-  // Mouse move handler
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -86,7 +71,6 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
         const deltaX = e.pageX - prev.x;
         const deltaY = e.pageY - prev.y;
         pan(deltaX, deltaY, viewport.scale);
-        drawing.redrawAll();
       }
 
       prevPositionRef.current = { x: e.pageX, y: e.pageY };
@@ -94,9 +78,8 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
 
     canvas.addEventListener('mousemove', handleMouseMove);
     return () => canvas.removeEventListener('mousemove', handleMouseMove);
-  }, [viewport, drawing, pan]);
+  }, [canvasRef, viewport, drawing, pan]);
 
-  // Mouse up handler
   useEffect(() => {
     const handleMouseUp = () => {
       mouseStateRef.current.leftDown = false;
@@ -108,7 +91,6 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, [drawing]);
 
-  // Wheel handler (zoom)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -117,14 +99,12 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
       e.preventDefault();
       const scaleAmount = -e.deltaY / 500;
       zoom(scaleAmount, e.pageX, e.pageY, canvas.width, canvas.height);
-      drawing.redrawAll();
     };
 
     canvas.addEventListener('wheel', handleWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', handleWheel);
-  }, [zoom, drawing]);
+  }, [canvasRef, zoom]);
 
-  // Disable context menu
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -136,8 +116,8 @@ export function InfiniteCanvas({ onClear, onResetViewport }: InfiniteCanvasProps
   }, []);
 
   return (
-    <div className="canvas-container">
-      <canvas ref={canvasRef} className="infinite-canvas" />
+    <div className="w-screen h-screen overflow-hidden">
+      <canvas ref={canvasRef} className="block touch-none select-none" />
     </div>
   );
 }

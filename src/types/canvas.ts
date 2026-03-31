@@ -15,12 +15,3 @@ export interface Viewport {
   offsetY: number;
   scale: number;
 }
-
-export type DrawingTool = 'pen' | 'eraser';
-
-export interface DrawingState {
-  lines: LineSegment[];
-  currentTool: DrawingTool;
-  color: string;
-  lineWidth: number;
-}

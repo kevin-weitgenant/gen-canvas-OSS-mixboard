@@ -1,25 +1,15 @@
-import { useRef } from 'react';
 import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
-import './App.css';
+import { useCanvasStore } from './store/canvasStore';
 
 function App() {
-  const canvasRef = useRef<{ clear: () => void; reset: () => void } | null>(null);
-
   const handleClear = () => {
-    window.location.reload();
-  };
-
-  const handleResetViewport = () => {
-    window.location.reload();
+    useCanvasStore.getState().clear();
   };
 
   return (
-    <div className="app">
-      <Toolbar
-        onClear={handleClear}
-        onResetViewport={handleResetViewport}
-      />
+    <div className="w-screen h-screen m-0 p-0 overflow-hidden">
+      <Toolbar onClear={handleClear} />
       <InfiniteCanvas />
     </div>
   );

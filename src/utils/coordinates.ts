@@ -1,10 +1,10 @@
 import type { Viewport } from '../types/canvas';
 
-export function toScreenX(xTrue: number, viewport: Viewport, canvasWidth: number): number {
+export function toScreenX(xTrue: number, viewport: Viewport): number {
   return (xTrue + viewport.offsetX) * viewport.scale;
 }
 
-export function toScreenY(yTrue: number, viewport: Viewport, canvasHeight: number): number {
+export function toScreenY(yTrue: number, viewport: Viewport): number {
   return (yTrue + viewport.offsetY) * viewport.scale;
 }
 
