@@ -67,9 +67,6 @@ export function useCanvasDrawing(
     const context = contextRef.current;
     if (!context) return;
 
-    context.fillStyle = '#fff';
-    context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
     const drawings = useCanvasStore.getState().drawings;
     for (const line of drawings) {
       drawLineOnContext(

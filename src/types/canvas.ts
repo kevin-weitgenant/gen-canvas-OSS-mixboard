@@ -15,3 +15,13 @@ export interface Viewport {
   offsetY: number;
   scale: number;
 }
+
+export interface ImageElement {
+  id: string;
+  type: 'image';
+  src: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
