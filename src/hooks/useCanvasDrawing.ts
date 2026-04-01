@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef } from 'react';
 import type { LineSegment, Viewport } from '../types/canvas';
 import { toScreenX, toScreenY } from '../utils/coordinates';
 import { useCanvasStore } from '../store/canvasStore';
@@ -25,12 +25,12 @@ export function useCanvasDrawing(
   const isDrawingRef = useRef(false);
   const prevPositionRef = useRef<{ x: number; y: number } | null>(null);
 
-  const startDrawing = useCallback((x: number, y: number) => {
+  function startDrawing(x: number, y: number) {
     isDrawingRef.current = true;
     prevPositionRef.current = { x, y };
-  }, []);
+  }
 
-  const draw = useCallback((x: number, y: number) => {
+  function draw(x: number, y: number) {
     if (!isDrawingRef.current || !prevPositionRef.current) return;
 
     const context = contextRef.current;
@@ -56,14 +56,14 @@ export function useCanvasDrawing(
     );
 
     prevPositionRef.current = { x, y };
-  }, [contextRef, viewport]);
+  }
 
-  const stopDrawing = useCallback(() => {
+  function stopDrawing() {
     isDrawingRef.current = false;
     prevPositionRef.current = null;
-  }, []);
+  }
 
-  const redrawAll = useCallback(() => {
+  function redrawAll() {
     const context = contextRef.current;
     if (!context) return;
 
@@ -80,18 +80,12 @@ export function useCanvasDrawing(
         toScreenY(line.y1, viewport)
       );
     }
-  }, [contextRef, viewport]);
-
-  const clear = useCallback(() => {
-    useCanvasStore.getState().clear();
-    redrawAll();
-  }, [redrawAll]);
+  }
 
   return {
     startDrawing,
     draw,
     stopDrawing,
     redrawAll,
-    clear,
   };
 }

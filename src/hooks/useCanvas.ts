@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 
 export interface UseCanvasOptions {
   backgroundColor?: string;
@@ -8,7 +8,7 @@ export function useCanvas(options: UseCanvasOptions = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  const resizeCanvas = useCallback(() => {
+  function resizeCanvas() {
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (!canvas || !context) return;
@@ -20,16 +20,7 @@ export function useCanvas(options: UseCanvasOptions = {}) {
       context.fillStyle = options.backgroundColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
     }
-  }, [options.backgroundColor]);
-
-  const clear = useCallback(() => {
-    const context = contextRef.current;
-    const canvas = canvasRef.current;
-    if (!context || !canvas) return;
-
-    context.fillStyle = options.backgroundColor || '#fff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-  }, [options.backgroundColor]);
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,15 +33,7 @@ export function useCanvas(options: UseCanvasOptions = {}) {
 
     // Set initial canvas size
     resizeCanvas();
-
-    // Handle window resize
-    const handleResize = () => resizeCanvas();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
   }, [resizeCanvas]);
 
-  return { canvasRef, contextRef, clear, resizeCanvas };
+  return { canvasRef, contextRef, resizeCanvas };
 }
