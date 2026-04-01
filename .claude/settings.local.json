@@ -6,7 +6,8 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm list:*)"
+      "Bash(npm list:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }
