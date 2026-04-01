@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { LineSegment, Viewport } from '../types/canvas';
 
-export type Tool = 'pen' | 'pan';
+export type Tool = 'pen' | 'pan' | 'selection';
 
 interface CanvasState {
   drawings: LineSegment[];

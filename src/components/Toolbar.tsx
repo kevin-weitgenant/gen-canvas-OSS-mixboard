@@ -1,4 +1,4 @@
-import { Hand, Pencil, Trash2 } from "lucide-react";
+import { Hand, MousePointer, Pencil, Trash2 } from "lucide-react";
 import { useCanvasStore } from "../store/canvasStore";
 
 const buttonClasses = "relative p-3 rounded-xl transition-all duration-200 cursor-pointer";
@@ -20,6 +20,13 @@ export function Toolbar() {
         className={`${buttonClasses} ${currentTool === 'pen' ? activeClasses : inactiveClasses}`}
       >
         <Pencil className="w-5 h-5" strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={() => setTool('selection')}
+        title="Selection Tool"
+        className={`${buttonClasses} ${currentTool === 'selection' ? activeClasses : inactiveClasses}`}
+      >
+        <MousePointer className="w-5 h-5" strokeWidth={2.5} />
       </button>
       <button
         onClick={() => setTool('pan')}
