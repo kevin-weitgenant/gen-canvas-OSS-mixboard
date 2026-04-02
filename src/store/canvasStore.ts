@@ -13,7 +13,6 @@ interface CanvasActions {
   updateImage: (id: string, updates: Partial<ImageElement>) => void;
   setSelectedImageId: (id: string | null) => void;
   setViewport: (viewport: Viewport) => void;
-  clear: () => void;
   setTool: (tool: Tool) => void;
   moveImageToEnd: (id: string) => void;
 }
@@ -45,13 +44,6 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   setSelectedImageId: (id) => set({ selectedImageId: id }),
 
   setViewport: (viewport) => set({ viewport }),
-
-  clear: () =>
-    set({
-      images: [],
-      selectedImageId: null,
-      viewport: INITIAL_VIEWPORT,
-    }),
 
   setTool: (tool) => set({ currentTool: tool }),
 
