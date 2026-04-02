@@ -4,6 +4,7 @@ import type { Viewport, ImageElement, Tool } from '../types/canvas';
 interface CanvasState {
   images: ImageElement[];
   selectedImageId: string | null;
+  selectedImageIds: string[];
   viewport: Viewport;
   currentTool: Tool;
 }
@@ -12,6 +13,8 @@ interface CanvasActions {
   addImage: (image: ImageElement) => void;
   updateImage: (id: string, updates: Partial<ImageElement>) => void;
   setSelectedImageId: (id: string | null) => void;
+  setSelectedImageIds: (ids: string[]) => void;
+  clearSelection: () => void;
   setViewport: (viewport: Viewport) => void;
   setTool: (tool: Tool) => void;
   moveImageToEnd: (id: string) => void;
@@ -28,6 +31,7 @@ const INITIAL_VIEWPORT: Viewport = {
 export const useCanvasStore = create<CanvasStore>((set) => ({
   images: [],
   selectedImageId: null,
+  selectedImageIds: [],
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
 
@@ -41,7 +45,23 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
       ),
     })),
 
-  setSelectedImageId: (id) => set({ selectedImageId: id }),
+  setSelectedImageId: (id) =>
+    set((state) => ({
+      selectedImageId: id,
+      selectedImageIds: id ? [id] : [],
+    })),
+
+  setSelectedImageIds: (ids) =>
+    set((state) => ({
+      selectedImageIds: ids,
+      selectedImageId: ids.length > 0 ? ids[0] : null,
+    })),
+
+  clearSelection: () =>
+    set({
+      selectedImageId: null,
+      selectedImageIds: [],
+    }),
 
   setViewport: (viewport) => set({ viewport }),
 
@@ -58,8 +78,13 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
 }));
 
 // Selector hooks for common patterns
+// Note: These need shallow comparison since they return arrays/objects
 export const useSelectedImage = () =>
   useCanvasStore((state) => {
     if (!state.selectedImageId) return null;
     return state.images.find((img) => img.id === state.selectedImageId) || null;
   });
+
+// Get selected image IDs - use this for comparisons to avoid infinite loops
+export const useSelectedImageIds = () =>
+  useCanvasStore((state) => state.selectedImageIds);

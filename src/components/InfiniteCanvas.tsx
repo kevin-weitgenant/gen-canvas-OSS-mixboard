@@ -28,14 +28,22 @@ export function InfiniteCanvas() {
   const images = useCanvasImages(contextRef, viewport);
 
   const imageList = useCanvasStore((state) => state.images);
-  const selectedImageId = useCanvasStore((state) => state.selectedImageId);
+  const selectedImageIds = useCanvasStore((state) => state.selectedImageIds);
   const currentTool = useCanvasStore((state) => state.currentTool);
 
   const { spacePressed } = useCanvasKeyboard({ currentTool });
 
   const renderRef = useRef<(() => void) | null>(null);
 
-  const { isDragging, hoveredHandle, getLiveResizeState, getLiveDragState } = useCanvasPointerEvents({
+  const {
+    isDragging,
+    hoveredHandle,
+    getLiveResizeState,
+    getLiveDragState,
+    getLiveMultiResizeState,
+    getLiveMultiDragState,
+    getSelectionRect,
+  } = useCanvasPointerEvents({
     canvasRef,
     viewport,
     pan,
@@ -48,9 +56,11 @@ export function InfiniteCanvas() {
   const { cursor: toolCursor } = useCanvasCursor({ currentTool, spacePressed, isDragging });
 
   const cursor =
-    currentTool === 'selection' && hoveredHandle ? getCursorForHandle(hoveredHandle)
-    : currentTool === 'selection' && selectedImageId ? 'move'
-    : toolCursor;
+    currentTool === 'selection' && hoveredHandle
+      ? getCursorForHandle(hoveredHandle)
+      : currentTool === 'selection' && selectedImageIds.length > 0
+        ? 'move'
+        : toolCursor;
 
   const dropHandlers = images.createDropHandlers();
 
@@ -61,9 +71,14 @@ export function InfiniteCanvas() {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-    // Use live state for drag or resize (only one active at a time)
-    const liveState = getLiveResizeState() ?? getLiveDragState();
-    images.renderAll(liveState);
+    // Pass all live states to renderAll
+    images.renderAll(
+      getLiveResizeState(),
+      getLiveDragState(),
+      getLiveMultiResizeState(),
+      getLiveMultiDragState(),
+      getSelectionRect()
+    );
   };
 
   useEffect(() => {
@@ -72,7 +87,7 @@ export function InfiniteCanvas() {
 
   useEffect(() => {
     render();
-  }, [imageList, selectedImageId, render]);
+  }, [imageList, selectedImageIds, render]);
 
   useEffect(() => {
     const handleResize = () => {

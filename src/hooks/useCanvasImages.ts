@@ -1,6 +1,6 @@
-import type { Viewport, ImageElement } from '../types/canvas';
+import type { Viewport, ImageElement, SelectionRectangle, LiveMultiDragState, LiveMultiResizeState } from '../types/canvas';
 import { toScreenX, toScreenY } from '../utils/coordinates';
-import { drawSelectionBox } from '../utils/geometry';
+import { drawSelectionBox, drawMultiSelectionBox, drawSelectionRectangle } from '../utils/geometry';
 import { loadImage, readFileAsDataURL } from '../utils/image';
 import { useCanvasStore } from '../store/canvasStore';
 
@@ -14,27 +14,58 @@ export interface LiveResizeState {
   image: ImageElement;
 }
 
-export function useCanvasImages(
+function useCanvasImages(
   contextRef: React.RefObject<CanvasRenderingContext2D | null>,
   viewport: Viewport
 ) {
-  async function renderAll(liveResizeState: LiveResizeState | null = null) {
+  async function renderAll(
+    liveResizeState: LiveResizeState | null = null,
+    liveDragState: LiveResizeState | null = null,
+    liveMultiResizeState: LiveMultiResizeState | null = null,
+    liveMultiDragState: LiveMultiDragState | null = null,
+    selectionRect: SelectionRectangle | null = null
+  ) {
     const context = contextRef.current;
     if (!context) return;
 
     const images = useCanvasStore.getState().images;
-    const selectedImageId = useCanvasStore.getState().selectedImageId;
+    const selectedIds = useCanvasStore.getState().selectedImageIds;
 
     // Clear canvas before drawing
     const canvas = context.canvas;
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Merge all live states into a single map
+    const liveStates = new Map<string, ImageElement>();
+
+    // Single resize state
+    if (liveResizeState) {
+      liveStates.set(liveResizeState.imageId, liveResizeState.image);
+    }
+
+    // Single drag state
+    if (liveDragState) {
+      liveStates.set(liveDragState.imageId, liveDragState.image);
+    }
+
+    // Multi-resize state
+    if (liveMultiResizeState) {
+      for (const [id, img] of liveMultiResizeState.images) {
+        liveStates.set(id, img);
+      }
+    }
+
+    // Multi-drag state
+    if (liveMultiDragState) {
+      for (const [id, img] of liveMultiDragState.images) {
+        liveStates.set(id, img);
+      }
+    }
+
     // Load and draw all images synchronously in order
     const drawPromises = images.map((imageEl) => {
-      // Use live state if available and matches this image
-      const toRender = liveResizeState?.imageId === imageEl.id
-        ? liveResizeState.image
-        : imageEl;
+      // Use live state if available for this image
+      const toRender = liveStates.get(imageEl.id) ?? imageEl;
 
       return loadImage(toRender.src).then((img) => {
         const ctx = contextRef.current;
@@ -50,16 +81,25 @@ export function useCanvasImages(
     // Wait for ALL images to finish drawing before selection box
     await Promise.all(drawPromises);
 
-    // Draw selection box on top - use live state for selected image if resizing
-    if (selectedImageId) {
-      let selectedImage = images.find((img) => img.id === selectedImageId);
-      // Override with live resize state if available
-      if (liveResizeState && liveResizeState.imageId === selectedImageId) {
-        selectedImage = liveResizeState.image;
-      }
+    // Draw selection rectangle if active
+    if (selectionRect?.isActive) {
+      drawSelectionRectangle(context, selectionRect);
+    }
+
+    // Draw selection box(es)
+    if (selectedIds.length === 1) {
+      // Single selection - use existing
+      const selectedImage = images.find((img) => img.id === selectedIds[0]);
+      const liveImage = liveStates.get(selectedIds[0]);
       if (selectedImage) {
-        drawSelectionBox(context, selectedImage, viewport);
+        drawSelectionBox(context, liveImage ?? selectedImage, viewport);
       }
+    } else if (selectedIds.length > 1) {
+      // Multi-selection - draw bounding box
+      const selectedImages = images
+        .filter((img) => selectedIds.includes(img.id))
+        .map((img) => liveStates.get(img.id) ?? img);
+      drawMultiSelectionBox(context, selectedImages, viewport);
     }
   }
 
@@ -102,7 +142,7 @@ export function useCanvasImages(
           height: img.height,
         });
 
-        useCanvasStore.getState().setSelectedImageId(imageId);
+        useCanvasStore.getState().setSelectedImageIds([imageId]);
         useCanvasStore.getState().setTool('selection');
       }
     }
@@ -115,3 +155,5 @@ export function useCanvasImages(
     createDropHandlers,
   };
 }
+
+export { useCanvasImages };

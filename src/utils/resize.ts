@@ -1,4 +1,4 @@
-import type { ResizeHandle } from '../types/canvas';
+import type { ResizeHandle, ImageElement } from '../types/canvas';
 
 interface ImageState {
   x: number;
@@ -50,4 +50,74 @@ export function calculateResize(
     : initial.y;
 
   return { x, y, width: newWidth, height: newHeight };
+}
+
+/**
+ * Calculate scaled dimensions for multiple images
+ * All images scale proportionally from the bounding box anchor point
+ * Each image maintains its own aspect ratio
+ */
+export function calculateMultiImageResize(
+  handle: ResizeHandle,
+  deltaX: number,
+  _deltaY: number,
+  images: ImageElement[],
+  initialBoundingBox: ImageState
+): Array<{ id: string; updates: ImageState }> {
+  const boundingBoxAspectRatio = initialBoundingBox.width / initialBoundingBox.height;
+
+  // Calculate scale factor based on bounding box
+  let deltaWidth: number;
+
+  if (handle.includes('right')) {
+    deltaWidth = deltaX;
+  } else {
+    deltaWidth = -deltaX;
+  }
+
+  const newWidth = Math.max(MIN_SIZE, initialBoundingBox.width + deltaWidth);
+  const scaleFactor = newWidth / initialBoundingBox.width;
+
+  // Calculate anchor point based on handle (point that stays fixed)
+  const anchorX = handle.includes('left')
+    ? initialBoundingBox.x + initialBoundingBox.width
+    : initialBoundingBox.x;
+
+  const anchorY = handle.includes('top')
+    ? initialBoundingBox.y + initialBoundingBox.height
+    : initialBoundingBox.y;
+
+  return images.map((img) => {
+    const aspectRatio = img.width / img.height;
+    const newWidth = Math.max(MIN_SIZE, img.width * scaleFactor);
+    const newHeight = newWidth / aspectRatio;
+
+    let newX = img.x;
+    let newY = img.y;
+
+    if (handle.includes('left')) {
+      // Scale from right edge of bounding box
+      const distFromAnchor = anchorX - (img.x + img.width);
+      newX = anchorX - newWidth - distFromAnchor * scaleFactor;
+    } else {
+      // Scale from left edge
+      const distFromAnchor = img.x - anchorX;
+      newX = anchorX + distFromAnchor * scaleFactor;
+    }
+
+    if (handle.includes('top')) {
+      // Scale from bottom edge of bounding box
+      const distFromAnchor = anchorY - (img.y + img.height);
+      newY = anchorY - newHeight - distFromAnchor * scaleFactor;
+    } else {
+      // Scale from top edge
+      const distFromAnchor = img.y - anchorY;
+      newY = anchorY + distFromAnchor * scaleFactor;
+    }
+
+    return {
+      id: img.id,
+      updates: { x: newX, y: newY, width: newWidth, height: newHeight },
+    };
+  });
 }
