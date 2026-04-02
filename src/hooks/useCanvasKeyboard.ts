@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useCanvasStore } from '../store/canvasStore';
 import type { Tool } from '../types/canvas';
 
 interface UseCanvasKeyboardOptions {
@@ -21,6 +22,19 @@ export function useCanvasKeyboard({ currentTool }: UseCanvasKeyboardOptions): Us
       if (e.code === 'Space' && currentTool === 'selection') {
         e.preventDefault();
         setSpacePressed(true);
+      }
+
+      if ((e.code === 'Delete' || e.code === 'Backspace')) {
+        const selectedImageIds = useCanvasStore.getState().selectedImageIds;
+        if (selectedImageIds.length > 0) {
+          e.preventDefault();
+          useCanvasStore.getState().deleteImages(selectedImageIds);
+        }
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
+        e.preventDefault();
+        useCanvasStore.getState().undo();
       }
     };
 

@@ -7,11 +7,14 @@ interface CanvasState {
   selectedImageIds: string[];
   viewport: Viewport;
   currentTool: Tool;
+  undoStack: ImageElement[][];
 }
 
 interface CanvasActions {
   addImage: (image: ImageElement) => void;
   updateImage: (id: string, updates: Partial<ImageElement>) => void;
+  deleteImages: (ids: string[]) => void;
+  undo: () => void;
   setSelectedImageId: (id: string | null) => void;
   setSelectedImageIds: (ids: string[]) => void;
   clearSelection: () => void;
@@ -34,6 +37,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   selectedImageIds: [],
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
+  undoStack: [],
 
   addImage: (image) =>
     set((state) => ({ images: [...state.images, image] })),
@@ -44,6 +48,27 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         img.id === id ? { ...img, ...updates } : img
       ),
     })),
+
+  deleteImages: (ids) =>
+    set((state) => {
+      const deletedImages = state.images.filter((img) => ids.includes(img.id));
+      return {
+        images: state.images.filter((img) => !ids.includes(img.id)),
+        selectedImageIds: state.selectedImageIds.filter((id) => !ids.includes(id)),
+        selectedImageId: ids.includes(state.selectedImageId || '') ? null : state.selectedImageId,
+        undoStack: [...state.undoStack, deletedImages],
+      };
+    }),
+
+  undo: () =>
+    set((state) => {
+      if (state.undoStack.length === 0) return state;
+      const lastDeleted = state.undoStack[state.undoStack.length - 1];
+      return {
+        images: [...state.images, ...lastDeleted],
+        undoStack: state.undoStack.slice(0, -1),
+      };
+    }),
 
   setSelectedImageId: (id) =>
     set((state) => ({

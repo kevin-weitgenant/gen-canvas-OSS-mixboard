@@ -2,6 +2,9 @@
 
 ## Important Restrictions
 
+
+- **Prioritize using less props as possible**. No need of for example passing some zustand state as props to a component if it can be accessed directly from the component. This will help to keep the code cleaner and more maintainable.
+
 - **Never run `npm run dev`**: Do not start the development server. The user will run it manually when needed. 
 
 - **Check for typescript errors** after every change: Always check for TypeScript errors after making any changes to the code. This ensures that your code is type-safe and helps catch potential issues early on.
