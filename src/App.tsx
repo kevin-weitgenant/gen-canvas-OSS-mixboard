@@ -1,6 +1,5 @@
 import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
-import { useCanvasStore } from './store/canvasStore';
 
 function App() {
   return (

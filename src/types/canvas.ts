@@ -25,3 +25,6 @@ export interface ImageElement {
   width: number;
   height: number;
 }
+
+export type ResizeHandle = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type Tool = 'pen' | 'pan' | 'selection';

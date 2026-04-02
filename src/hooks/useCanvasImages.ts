@@ -1,62 +1,61 @@
-import type { Viewport } from '../types/canvas';
+import type { Viewport, ImageElement } from '../types/canvas';
 import { toScreenX, toScreenY } from '../utils/coordinates';
+import { drawSelectionBox } from '../utils/geometry';
+import { loadImage, readFileAsDataURL } from '../utils/image';
 import { useCanvasStore } from '../store/canvasStore';
-
-const imageCache = new Map<string, HTMLImageElement>();
-
-function loadImage(src: string): Promise<HTMLImageElement> {
-  if (imageCache.has(src)) {
-    return Promise.resolve(imageCache.get(src)!);
-  }
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      imageCache.set(src, img);
-      resolve(img);
-    };
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-function readFileAsDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 export interface DropHandlers {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
 }
 
+export interface LiveResizeState {
+  imageId: string;
+  image: ImageElement;
+}
+
 export function useCanvasImages(
   contextRef: React.RefObject<CanvasRenderingContext2D | null>,
   viewport: Viewport
 ) {
-  function renderAll() {
+  function renderAll(liveResizeState: LiveResizeState | null = null) {
     const context = contextRef.current;
     if (!context) return;
 
     const images = useCanvasStore.getState().images;
+    const selectedImageId = useCanvasStore.getState().selectedImageId;
+
     for (const imageEl of images) {
-      loadImage(imageEl.src).then((img) => {
+      // Use live state if available and matches this image
+      const toRender = liveResizeState?.imageId === imageEl.id
+        ? liveResizeState.image
+        : imageEl;
+
+      loadImage(toRender.src).then((img) => {
         const ctx = contextRef.current;
         if (!ctx) return;
-        const screenX = toScreenX(imageEl.x, viewport);
-        const screenY = toScreenY(imageEl.y, viewport);
-        const screenWidth = imageEl.width * viewport.scale;
-        const screenHeight = imageEl.height * viewport.scale;
+        const screenX = toScreenX(toRender.x, viewport);
+        const screenY = toScreenY(toRender.y, viewport);
+        const screenWidth = toRender.width * viewport.scale;
+        const screenHeight = toRender.height * viewport.scale;
         ctx.drawImage(img, screenX, screenY, screenWidth, screenHeight);
       });
     }
+
+    // Draw selection box on top - use live state for selected image if resizing
+    if (selectedImageId) {
+      let selectedImage = images.find((img) => img.id === selectedImageId);
+      // Override with live resize state if available
+      if (liveResizeState && liveResizeState.imageId === selectedImageId) {
+        selectedImage = liveResizeState.image;
+      }
+      if (selectedImage) {
+        drawSelectionBox(context, selectedImage, viewport);
+      }
+    }
   }
 
-  function createDropHandlers(canvasRef: React.RefObject<HTMLCanvasElement | null>): DropHandlers {
+  function createDropHandlers(): DropHandlers {
     function handleDragOver(e: React.DragEvent) {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'copy';
@@ -65,7 +64,7 @@ export function useCanvasImages(
     async function handleDrop(e: React.DragEvent) {
       e.preventDefault();
 
-      const canvas = canvasRef.current;
+      const canvas = e.currentTarget as HTMLCanvasElement;
       if (!canvas) return;
 
       const files = Array.from(e.dataTransfer.files);
@@ -84,8 +83,9 @@ export function useCanvasImages(
         const dataUrl = await readFileAsDataURL(file);
         const img = await loadImage(dataUrl);
 
+        const imageId = crypto.randomUUID();
         useCanvasStore.getState().addImage({
-          id: crypto.randomUUID(),
+          id: imageId,
           type: 'image',
           src: dataUrl,
           x: canvasX,
@@ -93,6 +93,9 @@ export function useCanvasImages(
           width: img.width,
           height: img.height,
         });
+
+        useCanvasStore.getState().setSelectedImageId(imageId);
+        useCanvasStore.getState().setTool('selection');
       }
     }
 

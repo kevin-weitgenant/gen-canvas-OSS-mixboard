@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
 import { useCanvasViewport } from '../hooks/useCanvasViewport';
 import { useCanvasDrawing } from '../hooks/useCanvasDrawing';
@@ -7,31 +7,38 @@ import { useCanvasKeyboard } from '../hooks/useCanvasKeyboard';
 import { useCanvasCursor } from '../hooks/useCanvasCursor';
 import { useCanvasPointerEvents } from '../hooks/useCanvasPointerEvents';
 import { useCanvasStore } from '../store/canvasStore';
+import type { ResizeHandle } from '../types/canvas';
+
+const CURSORS: Record<ResizeHandle, string> = {
+  'top-left': 'nwse-resize',
+  'top-right': 'nesw-resize',
+  'bottom-left': 'nesw-resize',
+  'bottom-right': 'nwse-resize',
+};
+
+function getCursorForHandle(handle: ResizeHandle | null): string {
+  return handle ? CURSORS[handle] : 'default';
+}
 
 /**
  * InfiniteCanvas - Main canvas component for drawing and panning.
- * Composes multiple hooks to handle:
- * - Canvas setup and resizing
- * - Viewport transformations (pan/zoom)
- * - Drawing operations
- * - Keyboard shortcuts (space for temporary pan)
- * - Pointer events (mouse/wheel)
- * - Cursor state management
  */
 export function InfiniteCanvas() {
   const { canvasRef, contextRef, resizeCanvas } = useCanvas({ backgroundColor: '#fff' });
   const { viewport, pan, zoom } = useCanvasViewport();
   const drawing = useCanvasDrawing(contextRef, viewport);
   const images = useCanvasImages(contextRef, viewport);
+
   const drawings = useCanvasStore((state) => state.drawings);
   const imageList = useCanvasStore((state) => state.images);
+  const selectedImageId = useCanvasStore((state) => state.selectedImageId);
   const currentTool = useCanvasStore((state) => state.currentTool);
 
-  // Keyboard shortcuts (space key for temporary pan mode)
   const { spacePressed } = useCanvasKeyboard({ currentTool });
 
-  // Pointer events (mouse and wheel interactions)
-  const { isDragging } = useCanvasPointerEvents({
+  const renderRef = useRef<(() => void) | null>(null);
+
+  const { isDragging, hoveredHandle, getLiveResizeState, getLiveDragState } = useCanvasPointerEvents({
     canvasRef,
     viewport,
     drawing,
@@ -39,43 +46,48 @@ export function InfiniteCanvas() {
     zoom,
     currentTool,
     spacePressed,
+    onRender: () => renderRef.current?.(),
   });
 
-  // Cursor state derived from tool and interaction state
-  const { cursor } = useCanvasCursor({ currentTool, spacePressed, isDragging });
+  const { cursor: toolCursor } = useCanvasCursor({ currentTool, spacePressed, isDragging });
 
-  // Drop handlers for images
-  const dropHandlers = images.createDropHandlers(canvasRef);
+  const cursor =
+    currentTool === 'selection' && hoveredHandle ? getCursorForHandle(hoveredHandle)
+    : currentTool === 'selection' && selectedImageId ? 'move'
+    : toolCursor;
 
-  // Clear and redraw when drawings or images change
-  useEffect(() => {
+  const dropHandlers = images.createDropHandlers();
+
+  const render = () => {
     const context = contextRef.current;
     if (!context) return;
 
     context.fillStyle = '#fff';
     context.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-    images.renderAll();
+    // Use live state for drag or resize (only one active at a time)
+    const liveState = getLiveResizeState() ?? getLiveDragState();
+    images.renderAll(liveState);
     drawing.redrawAll();
-  }, [drawings, imageList, images, drawing]);
+  };
 
-  // Handle window resize
+  useEffect(() => {
+    renderRef.current = render;
+  }, [render]);
+
+  useEffect(() => {
+    render();
+  }, [drawings, imageList, selectedImageId, render]);
+
   useEffect(() => {
     const handleResize = () => {
       resizeCanvas();
-      const context = contextRef.current;
-      if (!context) return;
-
-      context.fillStyle = '#fff';
-      context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-      images.renderAll();
-      drawing.redrawAll();
+      render();
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [resizeCanvas, images, drawing]);
+  }, [resizeCanvas, render]);
 
   return (
     <div className="w-screen h-screen overflow-hidden">
