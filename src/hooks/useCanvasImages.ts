@@ -18,20 +18,25 @@ export function useCanvasImages(
   contextRef: React.RefObject<CanvasRenderingContext2D | null>,
   viewport: Viewport
 ) {
-  function renderAll(liveResizeState: LiveResizeState | null = null) {
+  async function renderAll(liveResizeState: LiveResizeState | null = null) {
     const context = contextRef.current;
     if (!context) return;
 
     const images = useCanvasStore.getState().images;
     const selectedImageId = useCanvasStore.getState().selectedImageId;
 
-    for (const imageEl of images) {
+    // Clear canvas before drawing
+    const canvas = context.canvas;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Load and draw all images synchronously in order
+    const drawPromises = images.map((imageEl) => {
       // Use live state if available and matches this image
       const toRender = liveResizeState?.imageId === imageEl.id
         ? liveResizeState.image
         : imageEl;
 
-      loadImage(toRender.src).then((img) => {
+      return loadImage(toRender.src).then((img) => {
         const ctx = contextRef.current;
         if (!ctx) return;
         const screenX = toScreenX(toRender.x, viewport);
@@ -40,7 +45,10 @@ export function useCanvasImages(
         const screenHeight = toRender.height * viewport.scale;
         ctx.drawImage(img, screenX, screenY, screenWidth, screenHeight);
       });
-    }
+    });
+
+    // Wait for ALL images to finish drawing before selection box
+    await Promise.all(drawPromises);
 
     // Draw selection box on top - use live state for selected image if resizing
     if (selectedImageId) {
