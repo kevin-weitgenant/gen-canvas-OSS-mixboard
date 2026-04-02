@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useCanvas } from '../hooks/useCanvas';
 import { useCanvasViewport } from '../hooks/useCanvasViewport';
-import { useCanvasDrawing } from '../hooks/useCanvasDrawing';
 import { useCanvasImages } from '../hooks/useCanvasImages';
 import { useCanvasKeyboard } from '../hooks/useCanvasKeyboard';
 import { useCanvasCursor } from '../hooks/useCanvasCursor';
@@ -26,10 +25,8 @@ function getCursorForHandle(handle: ResizeHandle | null): string {
 export function InfiniteCanvas() {
   const { canvasRef, contextRef, resizeCanvas } = useCanvas({ backgroundColor: '#fff' });
   const { viewport, pan, zoom } = useCanvasViewport();
-  const drawing = useCanvasDrawing(contextRef, viewport);
   const images = useCanvasImages(contextRef, viewport);
 
-  const drawings = useCanvasStore((state) => state.drawings);
   const imageList = useCanvasStore((state) => state.images);
   const selectedImageId = useCanvasStore((state) => state.selectedImageId);
   const currentTool = useCanvasStore((state) => state.currentTool);
@@ -41,7 +38,6 @@ export function InfiniteCanvas() {
   const { isDragging, hoveredHandle, getLiveResizeState, getLiveDragState } = useCanvasPointerEvents({
     canvasRef,
     viewport,
-    drawing,
     pan,
     zoom,
     currentTool,
@@ -68,7 +64,6 @@ export function InfiniteCanvas() {
     // Use live state for drag or resize (only one active at a time)
     const liveState = getLiveResizeState() ?? getLiveDragState();
     images.renderAll(liveState);
-    drawing.redrawAll();
   };
 
   useEffect(() => {
@@ -77,7 +72,7 @@ export function InfiniteCanvas() {
 
   useEffect(() => {
     render();
-  }, [drawings, imageList, selectedImageId, render]);
+  }, [imageList, selectedImageId, render]);
 
   useEffect(() => {
     const handleResize = () => {

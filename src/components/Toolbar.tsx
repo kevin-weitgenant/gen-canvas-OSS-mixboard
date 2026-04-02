@@ -1,4 +1,4 @@
-import { Hand, MousePointer, Pencil, Trash2 } from "lucide-react";
+import { Hand, MousePointer, Trash2 } from "lucide-react";
 import { useCanvasStore } from "../store/canvasStore";
 
 const buttonClasses = "relative p-3 rounded-xl transition-all duration-200 cursor-pointer";
@@ -14,13 +14,6 @@ export function Toolbar() {
 
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 z-[100]">
-      <button
-        onClick={() => setTool('pen')}
-        title="Pen Tool"
-        className={`${buttonClasses} ${currentTool === 'pen' ? activeClasses : inactiveClasses}`}
-      >
-        <Pencil className="w-5 h-5" strokeWidth={2.5} />
-      </button>
       <button
         onClick={() => setTool('selection')}
         title="Selection Tool"

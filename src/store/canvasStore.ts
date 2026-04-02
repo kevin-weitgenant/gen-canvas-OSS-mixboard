@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import type { LineSegment, Viewport, ImageElement, Tool } from '../types/canvas';
+import type { Viewport, ImageElement, Tool } from '../types/canvas';
 
 interface CanvasState {
-  drawings: LineSegment[];
   images: ImageElement[];
   selectedImageId: string | null;
   viewport: Viewport;
@@ -10,8 +9,6 @@ interface CanvasState {
 }
 
 interface CanvasActions {
-  addDrawing: (drawing: LineSegment) => void;
-  setDrawings: (drawings: LineSegment[]) => void;
   addImage: (image: ImageElement) => void;
   updateImage: (id: string, updates: Partial<ImageElement>) => void;
   setSelectedImageId: (id: string | null) => void;
@@ -29,16 +26,10 @@ const INITIAL_VIEWPORT: Viewport = {
 };
 
 export const useCanvasStore = create<CanvasStore>((set) => ({
-  drawings: [],
   images: [],
   selectedImageId: null,
   viewport: INITIAL_VIEWPORT,
-  currentTool: 'pen',
-
-  addDrawing: (drawing) =>
-    set((state) => ({ drawings: [...state.drawings, drawing] })),
-
-  setDrawings: (drawings) => set({ drawings }),
+  currentTool: 'selection',
 
   addImage: (image) =>
     set((state) => ({ images: [...state.images, image] })),
@@ -56,7 +47,6 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
 
   clear: () =>
     set({
-      drawings: [],
       images: [],
       selectedImageId: null,
       viewport: INITIAL_VIEWPORT,

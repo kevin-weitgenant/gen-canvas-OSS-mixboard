@@ -1,18 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import type { Viewport, ImageElement } from '../types/canvas';
-import { toTrueX, toTrueY } from '../utils/coordinates';
+import type { Viewport, ImageElement, Tool } from '../types/canvas';
 import { isPointInImage } from '../utils/hitTest';
 import { useCanvasStore, useSelectedImage } from '../store/canvasStore';
 import { useCanvasSelection } from './useCanvasSelection';
 import { useCanvasImageResize } from './useCanvasImageResize';
 import { useCanvasImageDrag } from './useCanvasImageDrag';
-
-interface DrawingCallbacks {
-  startDrawing: (x: number, y: number) => void;
-  draw: (x: number, y: number) => void;
-  stopDrawing: () => void;
-}
 
 interface PanCallbacks {
   pan: (deltaX: number, deltaY: number, scale: number) => void;
@@ -22,10 +15,9 @@ interface PanCallbacks {
 interface UseCanvasPointerEventsOptions {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   viewport: Viewport;
-  drawing: DrawingCallbacks;
   pan: PanCallbacks['pan'];
   zoom: PanCallbacks['zoom'];
-  currentTool: 'pen' | 'pan' | 'selection';
+  currentTool: Tool;
   spacePressed: boolean;
   onRender?: () => void;
 }
@@ -51,7 +43,6 @@ interface MouseState {
 export function useCanvasPointerEvents({
   canvasRef,
   viewport,
-  drawing,
   pan,
   zoom,
   currentTool,
@@ -115,10 +106,6 @@ export function useCanvasPointerEvents({
         } else {
           useCanvasStore.getState().setSelectedImageId(null);
         }
-      } else {
-        const trueX = toTrueX(e.pageX, viewport);
-        const trueY = toTrueY(e.pageY, viewport);
-        drawing.startDrawing(trueX, trueY);
       }
     };
 
@@ -143,10 +130,6 @@ export function useCanvasPointerEvents({
             onRender?.();
           }
         }
-      } else if (state.leftDown) {
-        const trueX = toTrueX(screenX, viewport);
-        const trueY = toTrueY(screenY, viewport);
-        drawing.draw(trueX, trueY);
       } else if (currentTool === 'selection') {
         const handle = selection.getHandleAtPoint(screenX, screenY);
         resize.setHoveredHandle(handle);
@@ -171,12 +154,11 @@ export function useCanvasPointerEvents({
       window.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [viewport, drawing, pan, zoom, currentTool, spacePressed, selection, resize, drag, selectedImage, onRender]);
+  }, [viewport, pan, zoom, currentTool, spacePressed, selection, resize, drag, selectedImage, onRender]);
 
   useEffect(() => {
     const handleMouseUp = () => {
       mouseStateRef.current.leftDown = false;
-      drawing.stopDrawing();
 
       if (resize.isActive() && selectedImage) {
         const sizeUpdate = resize.commitResize(selectedImage.id);
@@ -199,7 +181,7 @@ export function useCanvasPointerEvents({
 
     window.addEventListener('mouseup', handleMouseUp);
     return () => window.removeEventListener('mouseup', handleMouseUp);
-  }, [drawing, resize, drag, selectedImage]);
+  }, [resize, drag, selectedImage]);
 
   return {
     isDragging,
