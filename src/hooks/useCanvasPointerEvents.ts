@@ -101,6 +101,7 @@ export function useCanvasPointerEvents({
 
         if (clickedImage) {
           useCanvasStore.getState().setSelectedImageId(clickedImage.id);
+          useCanvasStore.getState().moveImageToEnd(clickedImage.id);
           drag.startDrag(clickedImage, e.pageX, e.pageY);
           setIsDragging(true);
         } else {

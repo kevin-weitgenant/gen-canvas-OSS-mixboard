@@ -4,7 +4,7 @@ import { toScreenX, toScreenY } from './coordinates';
 const HANDLE_SIZE = 8;
 const SELECTION_COLOR = '#3b82f6';
 
-export interface SelectionBox {
+interface SelectionBox {
   x: number;
   y: number;
   width: number;

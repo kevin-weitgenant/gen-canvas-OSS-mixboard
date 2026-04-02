@@ -20,7 +20,7 @@ function getCursorForHandle(handle: ResizeHandle | null): string {
 }
 
 /**
- * InfiniteCanvas - Main canvas component for drawing and panning.
+ * InfiniteCanvas - Main canvas component for image manipulation and panning.
  */
 export function InfiniteCanvas() {
   const { canvasRef, contextRef, resizeCanvas } = useCanvas({ backgroundColor: '#fff' });

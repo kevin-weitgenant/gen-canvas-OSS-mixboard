@@ -15,6 +15,7 @@ interface CanvasActions {
   setViewport: (viewport: Viewport) => void;
   clear: () => void;
   setTool: (tool: Tool) => void;
+  moveImageToEnd: (id: string) => void;
 }
 
 type CanvasStore = CanvasState & CanvasActions;
@@ -53,6 +54,15 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
     }),
 
   setTool: (tool) => set({ currentTool: tool }),
+
+  moveImageToEnd: (id) =>
+    set((state) => {
+      const image = state.images.find((img) => img.id === id);
+      if (!image) return state;
+      return {
+        images: [...state.images.filter((img) => img.id !== id), image],
+      };
+    }),
 }));
 
 // Selector hooks for common patterns

@@ -1,5 +1,5 @@
 import type { ImageElement, Viewport, ResizeHandle } from '../types/canvas';
-import { getImageScreenBox } from './geometry';
+import { getImageScreenBox, getResizeHandles } from './geometry';
 
 const HANDLE_SIZE = 8;
 
@@ -19,24 +19,6 @@ export function isPointInImage(
     screenY >= box.y &&
     screenY <= box.y + box.height
   );
-}
-
-/**
- * Get the positions of the 4 corner resize handles
- */
-function getResizeHandles(
-  image: ImageElement,
-  viewport: Viewport
-): Record<ResizeHandle, { x: number; y: number }> {
-  const box = getImageScreenBox(image, viewport);
-  const halfHandle = HANDLE_SIZE / 2;
-
-  return {
-    'top-left': { x: box.x - halfHandle, y: box.y - halfHandle },
-    'top-right': { x: box.x + box.width - halfHandle, y: box.y - halfHandle },
-    'bottom-left': { x: box.x - halfHandle, y: box.y + box.height - halfHandle },
-    'bottom-right': { x: box.x + box.width - halfHandle, y: box.y + box.height - halfHandle },
-  };
 }
 
 /**

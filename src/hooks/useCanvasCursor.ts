@@ -14,7 +14,7 @@ interface UseCanvasCursorReturn {
 
 /**
  * Derives cursor state from tool and interaction state.
- * Returns appropriate cursor for pan/draw modes and dragging state.
+ * Returns appropriate cursor for pan/selection modes and dragging state.
  */
 export function useCanvasCursor({ currentTool, spacePressed, isDragging }: UseCanvasCursorOptions): UseCanvasCursorReturn {
   const cursor: CursorState = isDragging
