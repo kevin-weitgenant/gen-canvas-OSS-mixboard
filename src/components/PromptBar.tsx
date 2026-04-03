@@ -1,6 +1,42 @@
+import { useState } from "react";
 import { ArrowRight, Plus } from "lucide-react";
+import { useImageGeneration } from "../hooks/useImageGeneration";
+import { useSelectedModels } from "../store/canvasStore";
+import { cn } from "../lib/utils";
 
 export function PromptBar() {
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { generateImage } = useImageGeneration();
+  const selectedModels = useSelectedModels();
+
+  const handleSubmit = async () => {
+    if (!prompt.trim() || isGenerating) return;
+
+    // Check if Z-Image is selected
+    if (!selectedModels.includes("z-image")) {
+      alert("Please select Z-Image model to generate images");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      await generateImage(prompt);
+      setPrompt("");
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3">
       {/* Plus Button */}
@@ -10,13 +46,26 @@ export function PromptBar() {
 
       {/* Input Pill */}
       <div className="relative flex items-center w-[400px] sm:w-[500px] h-12 bg-white rounded-full border border-slate-200 shadow-sm">
-        <input 
-          type="text" 
-          placeholder="What do you want to create?" 
-          className="w-full h-full bg-transparent pl-5 pr-14 rounded-full outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px]"
+        <input
+          type="text"
+          placeholder="What do you want to create?"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isGenerating}
+          className="w-full h-full bg-transparent pl-5 pr-14 rounded-full outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px] disabled:opacity-50"
         />
-        
-        <button className="absolute right-1.5 flex items-center justify-center w-9 h-9 rounded-full bg-[#E5DDF5] text-[#634994] hover:bg-[#DACCEE] transition-colors">
+
+        <button
+          onClick={handleSubmit}
+          disabled={!prompt.trim() || isGenerating}
+          className={cn(
+            "absolute right-1.5 flex items-center justify-center w-9 h-9 rounded-full transition-colors",
+            isGenerating || !prompt.trim()
+              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-[#E5DDF5] text-[#634994] hover:bg-[#DACCEE]"
+          )}
+        >
           <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
         </button>
       </div>

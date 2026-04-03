@@ -5,6 +5,7 @@ interface CanvasState {
   images: ImageElement[];
   selectedImageId: string | null;
   selectedImageIds: string[];
+  selectedModels: string[];
   viewport: Viewport;
   currentTool: Tool;
   undoStack: ImageElement[][];
@@ -21,6 +22,8 @@ interface CanvasActions {
   setViewport: (viewport: Viewport) => void;
   setTool: (tool: Tool) => void;
   moveImageToEnd: (id: string) => void;
+  setSelectedModels: (models: string[]) => void;
+  toggleModel: (modelId: string) => void;
 }
 
 type CanvasStore = CanvasState & CanvasActions;
@@ -35,6 +38,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   images: [],
   selectedImageId: null,
   selectedImageIds: [],
+  selectedModels: ['seedream-3', 'imagen4'],
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
   undoStack: [],
@@ -100,6 +104,15 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         images: [...state.images.filter((img) => img.id !== id), image],
       };
     }),
+
+  setSelectedModels: (models) => set({ selectedModels: models }),
+
+  toggleModel: (modelId) =>
+    set((state) => ({
+      selectedModels: state.selectedModels.includes(modelId)
+        ? state.selectedModels.filter((id) => id !== modelId)
+        : [...state.selectedModels, modelId],
+    })),
 }));
 
 // Selector hooks for common patterns
@@ -113,3 +126,7 @@ export const useSelectedImage = () =>
 // Get selected image IDs - use this for comparisons to avoid infinite loops
 export const useSelectedImageIds = () =>
   useCanvasStore((state) => state.selectedImageIds);
+
+// Get selected models
+export const useSelectedModels = () =>
+  useCanvasStore((state) => state.selectedModels);

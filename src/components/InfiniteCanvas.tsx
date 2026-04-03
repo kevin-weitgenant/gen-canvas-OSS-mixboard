@@ -89,6 +89,14 @@ export function InfiniteCanvas() {
     render();
   }, [imageList, selectedImageIds, render]);
 
+  // Re-render for loading animations
+  const hasLoadingImages = imageList.some(img => img.isLoading);
+  useEffect(() => {
+    if (!hasLoadingImages) return;
+    const interval = setInterval(render, 500);
+    return () => clearInterval(interval);
+  }, [hasLoadingImages, render]);
+
   useEffect(() => {
     const handleResize = () => {
       resizeCanvas();

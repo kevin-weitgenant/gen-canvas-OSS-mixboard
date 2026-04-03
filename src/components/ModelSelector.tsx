@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useCanvasStore, useSelectedModels } from "../store/canvasStore";
 
 interface Model {
   id: string;
@@ -40,18 +41,13 @@ const models: Model[] = [
 ];
 
 export function ModelSelector() {
-  const [selectedModels, setSelectedModels] = useState<string[]>(["seedream-3", "imagen4"]);
+  const selectedModels = useSelectedModels();
+  const toggleModel = useCanvasStore((state) => state.toggleModel);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasDragged, setHasDragged] = useState(false);
-
-  const toggleModel = (modelId: string) => {
-    setSelectedModels((prev) =>
-      prev.includes(modelId) ? prev.filter((id) => id !== modelId) : [...prev, modelId]
-    );
-  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;

@@ -12,6 +12,8 @@ export interface ImageElement {
   y: number;
   width: number;
   height: number;
+  isLoading?: boolean;
+  loadingState?: 'idle' | 'creating' | 'polling' | 'success' | 'failed';
 }
 
 export type ResizeHandle = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';

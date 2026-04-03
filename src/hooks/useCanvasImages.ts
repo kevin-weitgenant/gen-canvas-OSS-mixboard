@@ -67,6 +67,42 @@ function useCanvasImages(
       // Use live state if available for this image
       const toRender = liveStates.get(imageEl.id) ?? imageEl;
 
+      // Handle loading state (skeleton)
+      if (toRender.isLoading) {
+        const ctx = contextRef.current;
+        if (!ctx) return Promise.resolve();
+        const screenX = toScreenX(toRender.x, viewport);
+        const screenY = toScreenY(toRender.y, viewport);
+        const screenWidth = toRender.width * viewport.scale;
+        const screenHeight = toRender.height * viewport.scale;
+
+        // Draw skeleton
+        ctx.save();
+        ctx.fillStyle = '#f3f4f6';
+        ctx.fillRect(screenX, screenY, screenWidth, screenHeight);
+
+        // Draw border
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(screenX, screenY, screenWidth, screenHeight);
+
+        // Draw loading text
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const centerX = screenX + screenWidth / 2;
+        const centerY = screenY + screenHeight / 2;
+
+        // Animated dots effect (based on time)
+        const dots = Math.floor(Date.now() / 500) % 4;
+        const loadingText = 'Generating' + '.'.repeat(dots);
+        ctx.fillText(loadingText, centerX, centerY);
+        ctx.restore();
+
+        return Promise.resolve();
+      }
+
       return loadImage(toRender.src).then((img) => {
         const ctx = contextRef.current;
         if (!ctx) return;
