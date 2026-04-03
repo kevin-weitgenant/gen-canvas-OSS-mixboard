@@ -19,7 +19,10 @@ export function useCanvasKeyboard({ currentTool }: UseCanvasKeyboardOptions): Us
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && currentTool === 'selection') {
+      // Only intercept space key for canvas panning when not focused on input elements
+      const isInputFocused = e.target instanceof HTMLInputElement ||
+                             e.target instanceof HTMLTextAreaElement;
+      if (e.code === 'Space' && currentTool === 'selection' && !isInputFocused) {
         e.preventDefault();
         setSpacePressed(true);
       }
