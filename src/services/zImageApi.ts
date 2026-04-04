@@ -1,73 +1,72 @@
 import { API_BASE_URL, API_KEY } from '../config/api';
+import { apiCall } from '../utils/api';
+import {
+  DEFAULT_ASPECT_RATIO,
+  MODEL_Z_IMAGE,
+} from '../constants/imageGeneration';
 import type {
   CreateTaskRequest,
   CreateTaskResponse,
-  TaskStatusResponse,
+  TaskStatusData,
   TaskResult,
-  TaskState,
 } from '../types/zImage';
+
+const ENDPOINTS = {
+  CREATE_TASK: '/api/v1/jobs/createTask',
+  TASK_STATUS: '/api/v1/jobs/recordInfo',
+} as const;
 
 export async function createTask(prompt: string): Promise<string> {
   const requestBody: CreateTaskRequest = {
-    model: 'z-image',
+    model: MODEL_Z_IMAGE,
     input: {
       prompt,
-      aspect_ratio: '1:1',
+      aspect_ratio: DEFAULT_ASPECT_RATIO,
       nsfw_checker: true,
     },
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/createTask`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
+  const data = await apiCall<CreateTaskResponse['data']>(
+    `${API_BASE_URL}${ENDPOINTS.CREATE_TASK}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify(requestBody),
     },
-    body: JSON.stringify(requestBody),
-  });
+    'Failed to create task'
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to create task: ${response.statusText}`);
-  }
-
-  const data: CreateTaskResponse = await response.json();
-
-  if (data.code !== 200) {
-    throw new Error(`API error: ${data.msg}`);
-  }
-
-  return data.data.taskId;
+  return data.taskId;
 }
 
-export async function getTaskStatus(taskId: string): Promise<{ state: TaskState; resultUrls?: string[] }> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/jobs/recordInfo?taskId=${taskId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${API_KEY}`,
+export async function getTaskStatus(
+  taskId: string
+): Promise<{ state: import('../types/zImage').TaskState; resultUrls?: string[] }> {
+  const searchParams = new URLSearchParams({ taskId });
+
+  const data = await apiCall<TaskStatusData>(
+    `${API_BASE_URL}${ENDPOINTS.TASK_STATUS}?${searchParams}`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+      },
     },
-  });
+    'Failed to get task status'
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to get task status: ${response.statusText}`);
-  }
-
-  const data: TaskStatusResponse = await response.json();
-
-  if (data.code !== 200) {
-    throw new Error(`API error: ${data.msg}`);
-  }
-
-  const { state, resultJson } = data.data;
-  let resultUrls: string[] | undefined;
+  const { state, resultJson } = data;
 
   if (state === 'success' && resultJson) {
     try {
       const result: TaskResult = JSON.parse(resultJson);
-      resultUrls = result.resultUrls;
+      return { state, resultUrls: result.resultUrls };
     } catch (e) {
       console.error('Failed to parse resultJson:', e);
     }
   }
 
-  return { state, resultUrls };
+  return { state };
 }

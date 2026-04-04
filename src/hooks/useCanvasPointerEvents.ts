@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import type { Viewport, ImageElement, Tool, SelectionRectangle } from '../types/canvas';
+import type { Viewport, ImageElement, Tool, SelectionRectangle, LiveMultiResizeState, LiveMultiDragState } from '../types/canvas';
 import { isPointInImage, getBoundingBoxHandleAtPoint, isPointInBoundingBox, doesImageIntersectRect } from '../utils/hitTest';
-import { getBoundingBoxScreenBox, type SelectionBox } from '../utils/geometry';
+import { getBoundingBoxScreenBox } from '../utils/geometry';
 import { useCanvasStore } from '../store/canvasStore';
 import { useCanvasSelection } from './useCanvasSelection';
 import { useCanvasImageResize } from './useCanvasImageResize';
@@ -30,8 +30,8 @@ interface UseCanvasPointerEventsReturn {
   hoveredHandle: ReturnType<typeof useCanvasImageResize>['hoveredHandle'];
   getLiveResizeState: () => import('./useCanvasImageResize').LiveResizeState | null;
   getLiveDragState: () => import('./useCanvasImageDrag').LiveDragState | null;
-  getLiveMultiResizeState: () => import('./useCanvasMultiResize').LiveMultiResizeState | null;
-  getLiveMultiDragState: () => import('./useCanvasMultiDrag').LiveMultiDragState | null;
+  getLiveMultiResizeState: () => LiveMultiResizeState | null;
+  getLiveMultiDragState: () => LiveMultiDragState | null;
   getSelectionRect: () => SelectionRectangle | null;
 }
 

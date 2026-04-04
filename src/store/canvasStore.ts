@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { DEFAULT_MODELS } from '../constants/imageGeneration';
 import type { Viewport, ImageElement, Tool } from '../types/canvas';
 
 interface CanvasState {
@@ -38,7 +39,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   images: [],
   selectedImageId: null,
   selectedImageIds: [],
-  selectedModels: ['seedream-3', 'imagen4'],
+  selectedModels: [...DEFAULT_MODELS],
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
   undoStack: [],
@@ -75,16 +76,16 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
     }),
 
   setSelectedImageId: (id) =>
-    set((state) => ({
+    set({
       selectedImageId: id,
       selectedImageIds: id ? [id] : [],
-    })),
+    }),
 
   setSelectedImageIds: (ids) =>
-    set((state) => ({
+    set({
       selectedImageIds: ids,
       selectedImageId: ids.length > 0 ? ids[0] : null,
-    })),
+    }),
 
   clearSelection: () =>
     set({

@@ -8,7 +8,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm list:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npx vite-ts-type-check:*)"
     ]
   }
 }

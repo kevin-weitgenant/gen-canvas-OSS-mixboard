@@ -64,8 +64,6 @@ export function calculateMultiImageResize(
   images: ImageElement[],
   initialBoundingBox: ImageState
 ): Array<{ id: string; updates: ImageState }> {
-  const boundingBoxAspectRatio = initialBoundingBox.width / initialBoundingBox.height;
-
   // Calculate scale factor based on bounding box
   let deltaWidth: number;
 
