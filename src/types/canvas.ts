@@ -4,6 +4,11 @@ export interface Viewport {
   scale: number;
 }
 
+export interface ImageSource {
+  type: 'generated' | 'uploaded';
+  prompt?: string; // only when type is 'generated'
+}
+
 export interface ImageElement {
   id: string;
   type: 'image';
@@ -14,6 +19,7 @@ export interface ImageElement {
   height: number;
   isLoading?: boolean;
   loadingState?: 'idle' | 'creating' | 'polling' | 'success' | 'failed';
+  source?: ImageSource;
 }
 
 export type ResizeHandle = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';

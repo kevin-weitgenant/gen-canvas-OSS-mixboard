@@ -15,7 +15,8 @@ interface CreateVariationsModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_INSTRUCTION = 'Modify this {prompt base} to vary style, color, lighting, composition, etc.';
+const DEFAULT_INSTRUCTION = 'Describe how to generate prompt variations of this image';
+const GENERATED_INSTRUCTION = 'Modify this {prompt base} to vary style, color, lighting, composition, etc.';
 
 const MIN_VARIATIONS = 1;
 const MAX_VARIATIONS = 8;
@@ -158,8 +159,11 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   const images = useCanvasStore((state) => state.images);
   const image = images.find((img) => img.id === imageId);
 
-  const [basePrompt, setBasePrompt] = useState('Abstract modern art painting with bold geometric shapes and vibrant colors on gallery wall');
-  const [instruction, setInstruction] = useState(DEFAULT_INSTRUCTION);
+  const isGenerated = image?.source?.type === 'generated';
+  const originalPrompt = image?.source?.prompt || '';
+
+  const [basePrompt, setBasePrompt] = useState(originalPrompt || 'Abstract modern art painting with bold geometric shapes and vibrant colors on gallery wall');
+  const [instruction, setInstruction] = useState(isGenerated ? GENERATED_INSTRUCTION : DEFAULT_INSTRUCTION);
   const [count, setCount] = useState(3);
   const [prompts, setPrompts] = useState<PromptEntry[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -173,7 +177,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   async function handleGenerate() {
     setGenerating(true);
     await new Promise((r) => setTimeout(r, 650));
-    setPrompts(Array.from({ length: count }, (_, i) => makeEntry(`${basePrompt}, ${SUFFIXES[i % SUFFIXES.length]}`)));
+    setPrompts(Array.from({ length: count }, (_, i) => makeEntry(`${isGenerated ? basePrompt + ', ' : ''}${SUFFIXES[i % SUFFIXES.length]}`)));
     setGenerated(true);
     setGenerating(false);
   }
@@ -268,7 +272,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
               <div className="flex-shrink-0">
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-white/20 shadow-md">
                   {image?.src ? (
-                    <img src={image.src} alt="Base image" crossOrigin="anonymous" className="w-full h-full object-cover" />
+                    <img src={image.src} alt="Base image" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
                   )}
@@ -279,13 +283,19 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
               </div>
               <div className="flex-1 flex flex-col gap-1.5">
                 <label htmlFor="base-prompt" className="text-xs font-semibold text-gray-900">Base prompt</label>
-                <textarea
-                  id="base-prompt"
-                  value={basePrompt}
-                  onChange={(e) => setBasePrompt(e.target.value)}
-                  rows={3}
-                  className="flex-1 resize-none rounded-md border border-blue-400/40 bg-white px-2 py-2 text-xs text-gray-900 leading-relaxed outline-none focus:shadow-[0_0_0_1px_rgba(85,132,255,0.6)]"
-                />
+                {isGenerated ? (
+                  <textarea
+                    id="base-prompt"
+                    value={basePrompt}
+                    onChange={(e) => setBasePrompt(e.target.value)}
+                    rows={3}
+                    className="flex-1 resize-none rounded-md border border-blue-400/40 bg-white px-2 py-2 text-xs text-gray-900 leading-relaxed outline-none focus:shadow-[0_0_0_1px_rgba(85,132,255,0.6)]"
+                  />
+                ) : (
+                  <div className="flex-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-500 italic leading-relaxed">
+                    This image was not generated, it was uploaded
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -294,12 +304,12 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
           <section className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 border border-gray-200 text-gray-500 text-[0.625rem] font-semibold">
-                2
+                1
               </div>
               <span className="text-sm font-semibold text-gray-900">Configure variations</span>
             </div>
 
-            <PromptInstructionInput value={instruction} basePrompt={basePrompt} onChange={setInstruction} />
+            <PromptInstructionInput value={instruction} basePrompt={isGenerated ? basePrompt : undefined} onChange={setInstruction} />
 
             <div className="rounded-xl border border-gray-200 bg-slate-50 p-4">
               <CountSlider value={count} onChange={setCount} />
@@ -320,7 +330,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
             <section>
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-[0.625rem] font-semibold">
-                  3
+                  2
                 </div>
                 <span className="text-sm font-semibold text-gray-900">Generated prompts</span>
                 <span className="ml-auto text-xs text-gray-500">{prompts.length} variations · {totalImages} images</span>

@@ -8,6 +8,7 @@ import {
   POLLING_INTERVAL,
 } from '../constants/imageGeneration';
 import type { ImageLoadingState } from '../types/zImage';
+import type { ImageSource } from '../types/canvas';
 
 export function useImageGeneration() {
   const { addImage, updateImage, viewport } = useCanvasStore();
@@ -19,6 +20,10 @@ export function useImageGeneration() {
       const position = calculateViewportCenter(viewport, DEFAULT_IMAGE_SIZE);
 
       // Add loading placeholder
+      const source: ImageSource = {
+        type: 'generated',
+        prompt,
+      };
       addImage({
         id: imageId,
         type: 'image',
@@ -29,6 +34,7 @@ export function useImageGeneration() {
         height: DEFAULT_IMAGE_SIZE,
         isLoading: true,
         loadingState: 'creating',
+        source,
       });
 
       // Start polling

@@ -1,4 +1,4 @@
-import type { Viewport, ImageElement, SelectionRectangle, LiveMultiDragState, LiveMultiResizeState } from '../types/canvas';
+import type { Viewport, ImageElement, SelectionRectangle, LiveMultiDragState, LiveMultiResizeState, ImageSource } from '../types/canvas';
 import { toScreenX, toScreenY } from '../utils/coordinates';
 import { drawSelectionBox, drawMultiSelectionBox, drawSelectionRectangle } from '../utils/geometry';
 import { loadImage, readFileAsDataURL } from '../utils/image';
@@ -168,6 +168,9 @@ function useCanvasImages(
         const img = await loadImage(dataUrl);
 
         const imageId = crypto.randomUUID();
+        const source: ImageSource = {
+          type: 'uploaded',
+        };
         useCanvasStore.getState().addImage({
           id: imageId,
           type: 'image',
@@ -176,6 +179,7 @@ function useCanvasImages(
           y: canvasY,
           width: img.width,
           height: img.height,
+          source,
         });
 
         useCanvasStore.getState().setSelectedImageIds([imageId]);

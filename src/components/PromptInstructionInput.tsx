@@ -64,21 +64,23 @@ function TokenizedText({ text, basePrompt }: TokenizedTextProps) {
 
 interface PromptInstructionInputProps {
   value: string;
-  basePrompt: string;
+  basePrompt?: string;
   onChange: (value: string) => void;
 }
 
 export function PromptInstructionInput({ value, basePrompt, onChange }: PromptInstructionInputProps) {
   const [focused, setFocused] = useState<boolean>(false);
-  const hasToken = value.includes(TOKEN);
+  const hasToken = basePrompt !== undefined && value.includes(TOKEN);
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-start justify-between gap-2">
         <label className="text-xs font-semibold text-gray-900">Variation instruction</label>
-        <span className="text-[0.6875rem] text-gray-500 leading-relaxed text-right max-w-[280px]">
-          Modify the <code className="rounded-full bg-blue-100 px-1 py-0.5 text-blue-600 font-mono text-[0.625rem] border border-blue-200">{TOKEN}</code> or write from scratch — free field
-        </span>
+        {basePrompt !== undefined ? (
+          <span className="text-[0.6875rem] text-gray-500 leading-relaxed text-right max-w-[280px]">
+            Modify the <code className="rounded-full bg-blue-100 px-1 py-0.5 text-blue-600 font-mono text-[0.625rem] border border-blue-200">{TOKEN}</code> or write from scratch — free field
+          </span>
+        ) : null}
       </div>
 
       {focused ? (
