@@ -5,7 +5,9 @@ import { useCanvasImages } from '../hooks/useCanvasImages';
 import { useCanvasKeyboard } from '../hooks/useCanvasKeyboard';
 import { useCanvasCursor } from '../hooks/useCanvasCursor';
 import { useCanvasPointerEvents } from '../hooks/useCanvasPointerEvents';
+import { useCanvasContextMenu } from '../hooks/useCanvasContextMenu';
 import { useCanvasStore } from '../store/canvasStore';
+import { ContextMenu } from './ContextMenu';
 import type { ResizeHandle } from '../types/canvas';
 
 const CURSORS: Record<ResizeHandle, string> = {
@@ -34,6 +36,9 @@ export function InfiniteCanvas() {
   const { spacePressed } = useCanvasKeyboard({ currentTool });
 
   const renderRef = useRef<(() => void) | null>(null);
+
+  const { contextMenu } = useCanvasContextMenu({ canvasRef, viewport });
+  const setContextMenu = useCanvasStore((state) => state.setContextMenu);
 
   const {
     isDragging,
@@ -115,6 +120,12 @@ export function InfiniteCanvas() {
         style={{ cursor }}
         {...dropHandlers}
       />
+      {contextMenu && (
+        <ContextMenu
+          imageId={contextMenu.imageId}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 }

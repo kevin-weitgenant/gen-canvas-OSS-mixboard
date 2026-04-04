@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowRight, Plus } from "lucide-react";
 import { useImageGeneration } from "../hooks/useImageGeneration";
-import { useSelectedModels } from "../store/canvasStore";
+import { useSelectedModels, useCanvasStore } from "../store/canvasStore";
 import { MODEL_Z_IMAGE } from "../constants/imageGeneration";
 import { cn } from "../lib/utils";
 
@@ -59,6 +59,7 @@ export function PromptBar() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => useCanvasStore.getState().clearSelection()}
           disabled={isGenerating}
           className="w-full h-full bg-transparent pl-5 pr-14 rounded-full outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px] disabled:opacity-50"
         />

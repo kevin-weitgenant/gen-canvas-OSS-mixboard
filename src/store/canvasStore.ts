@@ -10,6 +10,7 @@ interface CanvasState {
   viewport: Viewport;
   currentTool: Tool;
   undoStack: ImageElement[][];
+  contextMenu: { imageId: string } | null;
 }
 
 interface CanvasActions {
@@ -25,6 +26,7 @@ interface CanvasActions {
   moveImageToEnd: (id: string) => void;
   setSelectedModels: (models: string[]) => void;
   toggleModel: (modelId: string) => void;
+  setContextMenu: (menu: { imageId: string } | null) => void;
 }
 
 type CanvasStore = CanvasState & CanvasActions;
@@ -43,6 +45,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
   undoStack: [],
+  contextMenu: null,
 
   addImage: (image) =>
     set((state) => ({ images: [...state.images, image] })),
@@ -114,6 +117,8 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
         ? state.selectedModels.filter((id) => id !== modelId)
         : [...state.selectedModels, modelId],
     })),
+
+  setContextMenu: (menu) => set({ contextMenu: menu }),
 }));
 
 // Selector hooks for common patterns

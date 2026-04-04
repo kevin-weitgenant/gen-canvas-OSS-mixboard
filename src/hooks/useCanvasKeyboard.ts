@@ -28,8 +28,10 @@ export function useCanvasKeyboard({ currentTool }: UseCanvasKeyboardOptions): Us
       }
 
       if ((e.code === 'Delete' || e.code === 'Backspace')) {
+        const isInputFocused = e.target instanceof HTMLInputElement ||
+                               e.target instanceof HTMLTextAreaElement;
         const selectedImageIds = useCanvasStore.getState().selectedImageIds;
-        if (selectedImageIds.length > 0) {
+        if (selectedImageIds.length > 0 && !isInputFocused) {
           e.preventDefault();
           useCanvasStore.getState().deleteImages(selectedImageIds);
         }
