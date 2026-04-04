@@ -8,6 +8,7 @@ import { useCanvasPointerEvents } from '../hooks/useCanvasPointerEvents';
 import { useCanvasContextMenu } from '../hooks/useCanvasContextMenu';
 import { useCanvasStore } from '../store/canvasStore';
 import { ContextMenu } from './ContextMenu';
+import { CreateVariationsModal } from './CreateVariationsModal';
 import type { ResizeHandle } from '../types/canvas';
 
 const CURSORS: Record<ResizeHandle, string> = {
@@ -39,6 +40,8 @@ export function InfiniteCanvas() {
 
   const { contextMenu } = useCanvasContextMenu({ canvasRef, viewport });
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
+  const variationsModal = useCanvasStore((state) => state.variationsModal);
+  const setVariationsModal = useCanvasStore((state) => state.setVariationsModal);
 
   const {
     isDragging,
@@ -124,6 +127,12 @@ export function InfiniteCanvas() {
         <ContextMenu
           imageId={contextMenu.imageId}
           onClose={() => setContextMenu(null)}
+        />
+      )}
+      {variationsModal && (
+        <CreateVariationsModal
+          imageId={variationsModal.imageId}
+          onClose={() => setVariationsModal(null)}
         />
       )}
     </div>

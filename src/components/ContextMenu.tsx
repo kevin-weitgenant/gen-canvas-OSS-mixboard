@@ -12,6 +12,7 @@ export function ContextMenu({ imageId, onClose }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const images = useCanvasStore((state) => state.images);
   const viewport = useCanvasStore((state) => state.viewport);
+  const setVariationsModal = useCanvasStore((state) => state.setVariationsModal);
   const image = images.find((img) => img.id === imageId);
 
   useEffect(() => {
@@ -27,24 +28,26 @@ export function ContextMenu({ imageId, onClose }: ContextMenuProps) {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
   }, [onClose]);
 
-  const handleDownload = () => {
-    console.log('Download image:', image);
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
     // TODO: Implement download functionality
     onClose();
   };
 
-  const handleGenerateVariations = () => {
-    console.log('Generate variations for image:', image);
-    // TODO: Implement variations functionality
+  const handleGenerateVariations = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (image) {
+      setVariationsModal({ imageId: image.id });
+    }
     onClose();
   };
 
@@ -80,6 +83,7 @@ export function ContextMenu({ imageId, onClose }: ContextMenuProps) {
       <div className="flex">
         <button
           onClick={handleDownload}
+          onMouseDown={(e) => e.stopPropagation()}
           className="flex-1 flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-sm text-slate-700 hover:bg-slate-100 transition-colors duration-150 outline-none border-r border-slate-200/50"
         >
           <Download className="w-5 h-5 text-slate-500" strokeWidth={2} />
@@ -87,6 +91,7 @@ export function ContextMenu({ imageId, onClose }: ContextMenuProps) {
         </button>
         <button
           onClick={handleGenerateVariations}
+          onMouseDown={(e) => e.stopPropagation()}
           className="flex-1 flex flex-col items-center justify-center gap-1.5 px-3 py-3 text-sm text-slate-700 hover:bg-slate-100 transition-colors duration-150 outline-none"
         >
           <GitBranch className="w-5 h-5 text-slate-500" strokeWidth={2} />
