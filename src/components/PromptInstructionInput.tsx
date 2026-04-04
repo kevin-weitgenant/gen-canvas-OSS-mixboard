@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 const TOKEN = '{prompt base}';
 
@@ -10,13 +11,7 @@ function TooltipToken({ basePrompt }: TooltipTokenProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  useOutsideClick(ref, () => setOpen(false), open);
 
   return (
     <span
@@ -74,7 +69,7 @@ interface PromptInstructionInputProps {
 }
 
 export function PromptInstructionInput({ value, basePrompt, onChange }: PromptInstructionInputProps) {
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState<boolean>(false);
   const hasToken = value.includes(TOKEN);
 
   return (

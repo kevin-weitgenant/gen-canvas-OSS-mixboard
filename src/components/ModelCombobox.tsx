@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Search, Check, ChevronDown } from 'lucide-react';
+import { useOutsideClick } from '../hooks/useOutsideClick';
 
 export interface Model {
   value: string;
@@ -39,7 +40,7 @@ interface ModelComboboxProps {
 
 export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,16 +50,10 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
     ? MODELS.filter((m) => m.label.toLowerCase().includes(query.toLowerCase()) || m.tag.toLowerCase().includes(query.toLowerCase()))
     : MODELS;
 
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setQuery('');
-      }
-    }
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+  useOutsideClick(containerRef, () => {
+    setOpen(false);
+    setQuery('');
+  }, open);
 
   function pick(v: string) {
     onChange(v);

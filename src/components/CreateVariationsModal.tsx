@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, Sparkles, Images, Trash2, Layers, PlusCircle, XCircle } from 'lucide-react';
 import { useCanvasStore } from '../store/canvasStore';
 import { PromptInstructionInput } from './PromptInstructionInput';
@@ -16,6 +16,9 @@ interface CreateVariationsModalProps {
 }
 
 const DEFAULT_INSTRUCTION = 'Modify this {prompt base} to vary style, color, lighting, composition, etc.';
+
+const MIN_VARIATIONS = 1;
+const MAX_VARIATIONS = 8;
 
 const SUFFIXES = [
   'in a cinematic, high-contrast dramatic lighting',
@@ -41,7 +44,7 @@ function CountSlider({ value, onChange }: { value: number; onChange: (value: num
         <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => onChange(Math.max(1, value - 1))}
+            onClick={() => onChange(Math.max(MIN_VARIATIONS, value - 1))}
             className="w-5 h-5 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 cursor-pointer transition-all hover:text-gray-900 hover:bg-slate-50"
           >
             −
@@ -52,14 +55,14 @@ function CountSlider({ value, onChange }: { value: number; onChange: (value: num
             max={8}
             value={value}
             onChange={(e) => {
-              const n = Math.max(1, Math.min(8, Number(e.target.value)));
+              const n = Math.max(MIN_VARIATIONS, Math.min(MAX_VARIATIONS, Number(e.target.value)));
               if (!isNaN(n)) onChange(n);
             }}
             className="w-9 text-center rounded-md border border-blue-400/40 bg-white px-1 py-0.5 text-sm font-semibold text-gray-900 outline-none focus:shadow-[0_0_0_1px_rgba(85,132,255,0.4)]"
           />
           <button
             type="button"
-            onClick={() => onChange(Math.min(8, value + 1))}
+            onClick={() => onChange(Math.min(MAX_VARIATIONS, value + 1))}
             className="w-5 h-5 flex items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 cursor-pointer transition-all hover:text-gray-900 hover:bg-slate-50"
           >
             +
@@ -69,14 +72,14 @@ function CountSlider({ value, onChange }: { value: number; onChange: (value: num
       <div className="relative flex items-center h-5">
         <div
           className="absolute left-0 h-1.5 rounded-full bg-gradient-to-r from-[#6d4fff] to-[#5584ff] transition-all"
-          style={{ width: `${((value - 1) / 7) * 100}%` }}
+          style={{ width: `${((value - MIN_VARIATIONS) / (MAX_VARIATIONS - MIN_VARIATIONS)) * 100}%` }}
         >
           <div className="absolute inset-0 rounded-full bg-slate-200 -z-10" />
         </div>
         <input
           type="range"
-          min={1}
-          max={8}
+          min={MIN_VARIATIONS}
+          max={MAX_VARIATIONS}
           step={1}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
@@ -84,7 +87,7 @@ function CountSlider({ value, onChange }: { value: number; onChange: (value: num
         />
       </div>
       <div className="flex justify-between px-px">
-        {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
+        {Array.from({ length: MAX_VARIATIONS }, (_, i) => i + 1).map((n) => (
           <button
             key={n}
             type="button"
@@ -102,9 +105,7 @@ function CountSlider({ value, onChange }: { value: number; onChange: (value: num
 // Model List Component
 function ModelList({ models, onChange }: { models: string[]; onChange: (models: string[]) => void }) {
   function updateModel(idx: number, val: string) {
-    const next = [...models];
-    next[idx] = val;
-    onChange(next);
+    onChange(models.map((m, i) => (i === idx ? val : m)));
   }
 
   function addModel() {
@@ -169,13 +170,13 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  const handleGenerate = useCallback(async () => {
+  async function handleGenerate() {
     setGenerating(true);
     await new Promise((r) => setTimeout(r, 650));
     setPrompts(Array.from({ length: count }, (_, i) => makeEntry(`${basePrompt}, ${SUFFIXES[i % SUFFIXES.length]}`)));
     setGenerated(true);
     setGenerating(false);
-  }, [basePrompt, count]);
+  }
 
   function updateText(id: string, text: string) {
     setPrompts((ps) => ps.map((p) => (p.id === id ? { ...p, text } : p)));
@@ -201,7 +202,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   }, [onClose]);
 
   // Drag handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
