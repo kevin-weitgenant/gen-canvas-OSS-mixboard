@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# Gen Canvas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> An open-source infinite canvas whiteboard with AI-powered image generation.
+> An OSS alternative to [Mixboard](https://mixboard.app).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Infinite Canvas** — Pan, zoom, and organize your ideas on an unlimited workspace
+- **AI Image Generation** — Generate images directly on the canvas using text prompts
+- **Model Selection** — Choose from 20+ AI models including Seedream, Imagen, Flux, OpenAI, Qwen, and more
+- **Interactive Tools** — Selection, pan, and context menu for seamless manipulation
 
-## React Compiler
+## AI Provider
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Currently, Gen Canvas uses the **[kie.ai](https://kie.ai)** API for image generation.
 
-## Expanding the ESLint configuration
+An API key is required — sign up at [kie.ai](https://kie.ai) to get yours.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Roadmap
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- [ ] Support for local models (run AI generation completely offline)
+- [ ] More model providers
+- [ ] Collaborative features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Quick Start
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Install dependencies
+npm install
+
+# Create a .env file with your kie.ai API key
+echo "VITE_KIE_AI_API_KEY=your_key_here" > .env
+
+# Run the development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Tech Stack
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- React 19 + TypeScript
+- Vite
+- Tailwind CSS
+- Zustand for state management
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Collaboration
+
+Interested in contributing or collaborating? **DM me on [X/Twitter](https://x.com/KevinWeitgenant)**.
+
+MIT License

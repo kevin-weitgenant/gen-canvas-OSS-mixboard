@@ -1,8 +1,9 @@
 {
-  "name": "infinite-canvas-react",
+  "name": "gen-canvas",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "An open-source infinite canvas whiteboard with AI image generation. An OSS alternative to Mixboard.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
