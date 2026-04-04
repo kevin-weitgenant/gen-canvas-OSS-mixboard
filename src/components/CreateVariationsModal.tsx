@@ -15,8 +15,10 @@ interface CreateVariationsModalProps {
   onClose: () => void;
 }
 
-const DEFAULT_INSTRUCTION = 'Describe how to generate prompt variations of this image';
+const UPLOAD_INSTRUCTION = 'Describe how to generate prompt variations of this image';
 const GENERATED_INSTRUCTION = 'Modify this {prompt base} to vary style, color, lighting, composition, etc.';
+
+const DEFAULT_PROMPT = 'Abstract modern art painting with bold geometric shapes and vibrant colors on gallery wall';
 
 const MIN_VARIATIONS = 1;
 const MAX_VARIATIONS = 8;
@@ -162,8 +164,8 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   const isGenerated = image?.source?.type === 'generated';
   const originalPrompt = image?.source?.prompt || '';
 
-  const [basePrompt, setBasePrompt] = useState(originalPrompt || 'Abstract modern art painting with bold geometric shapes and vibrant colors on gallery wall');
-  const [instruction, setInstruction] = useState(isGenerated ? GENERATED_INSTRUCTION : DEFAULT_INSTRUCTION);
+  const [basePrompt, setBasePrompt] = useState(originalPrompt || DEFAULT_PROMPT);
+  const [instruction, setInstruction] = useState(isGenerated ? GENERATED_INSTRUCTION : UPLOAD_INSTRUCTION);
   const [count, setCount] = useState(3);
   const [prompts, setPrompts] = useState<PromptEntry[]>([]);
   const [generating, setGenerating] = useState(false);
@@ -276,9 +278,6 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
                   ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
                   )}
-                  <div className="absolute bottom-[-0.25rem] right-[-0.25rem] flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 border-2 border-white text-white text-[0.5rem] font-bold">
-                    1
-                  </div>
                 </div>
               </div>
               <div className="flex-1 flex flex-col gap-1.5">

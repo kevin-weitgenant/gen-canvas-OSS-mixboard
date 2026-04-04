@@ -45,7 +45,7 @@ function TooltipToken({ basePrompt }: TooltipTokenProps) {
 
 interface TokenizedTextProps {
   text: string;
-  basePrompt: string;
+  basePrompt?: string;
 }
 
 function TokenizedText({ text, basePrompt }: TokenizedTextProps) {
