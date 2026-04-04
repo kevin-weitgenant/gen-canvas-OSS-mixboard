@@ -7,7 +7,6 @@
 
 - **Infinite Canvas** — Pan, zoom, and organize your ideas on an unlimited workspace
 - **AI Image Generation** — Generate images directly on the canvas using text prompts
-- **Model Selection** — Choose from 20+ AI models including Seedream, Imagen, Flux, OpenAI, Qwen, and more
 - **Interactive Tools** — Selection, pan, and context menu for seamless manipulation
 
 ## AI Provider
@@ -16,11 +15,7 @@ Currently, Gen Canvas uses the **[kie.ai](https://kie.ai)** API for image genera
 
 An API key is required — sign up at [kie.ai](https://kie.ai) to get yours.
 
-## Roadmap
 
-- [ ] Support for local models (run AI generation completely offline)
-- [ ] More model providers
-- [ ] Collaborative features
 
 ## Quick Start
 
