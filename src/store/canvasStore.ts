@@ -10,6 +10,7 @@ interface CanvasState {
   viewport: Viewport;
   currentTool: Tool;
   undoStack: ImageElement[][];
+  clipboardImages: ImageElement[];
   contextMenu: { imageId: string } | null;
   variationsModal: { imageId: string } | null;
 }
@@ -27,6 +28,7 @@ interface CanvasActions {
   moveImageToEnd: (id: string) => void;
   setSelectedModels: (models: string[]) => void;
   toggleModel: (modelId: string) => void;
+  copyImages: (ids: string[]) => void;
   setContextMenu: (menu: { imageId: string } | null) => void;
   setVariationsModal: (modal: { imageId: string } | null) => void;
 }
@@ -47,6 +49,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   viewport: INITIAL_VIEWPORT,
   currentTool: 'selection',
   undoStack: [],
+  clipboardImages: [],
   contextMenu: null,
   variationsModal: null,
 
@@ -124,6 +127,12 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   setContextMenu: (menu) => set({ contextMenu: menu }),
 
   setVariationsModal: (modal) => set({ variationsModal: modal }),
+
+  copyImages: (ids) =>
+    set((state) => {
+      const imagesToCopy = state.images.filter((img) => ids.includes(img.id));
+      return { clipboardImages: imagesToCopy };
+    }),
 }));
 
 // Selector hooks for common patterns

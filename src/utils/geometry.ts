@@ -100,6 +100,33 @@ export function getImagesBoundingBox(images: ImageElement[]): BoundingBox | null
 }
 
 /**
+ * Calculates offset positions for images to place their center at a target point.
+ * Preserves relative positions between images.
+ */
+export function calculateOffsetPositions(
+  images: ImageElement[],
+  targetX: number,
+  targetY: number
+): Array<{ image: ImageElement; x: number; y: number }> {
+  if (images.length === 0) return [];
+
+  const bbox = getImagesBoundingBox(images);
+  if (!bbox) return [];
+
+  const centerX = bbox.x + bbox.width / 2;
+  const centerY = bbox.y + bbox.height / 2;
+
+  const offsetX = targetX - centerX;
+  const offsetY = targetY - centerY;
+
+  return images.map((image) => ({
+    image,
+    x: image.x + offsetX,
+    y: image.y + offsetY,
+  }));
+}
+
+/**
  * Get the bounding box in screen coordinates for rendering
  */
 export function getBoundingBoxScreenBox(

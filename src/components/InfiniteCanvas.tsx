@@ -34,7 +34,7 @@ export function InfiniteCanvas() {
   const selectedImageIds = useCanvasStore((state) => state.selectedImageIds);
   const currentTool = useCanvasStore((state) => state.currentTool);
 
-  const { spacePressed } = useCanvasKeyboard({ currentTool });
+  const { spacePressed } = useCanvasKeyboard({ currentTool, canvasRef, viewport });
 
   const renderRef = useRef<(() => void) | null>(null);
 
