@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, Plus, Sparkles } from "lucide-react";
 import { useImageGeneration } from "../hooks/useImageGeneration";
 import { useSelectedModels, useCanvasStore } from "../store/canvasStore";
 import { MODEL_Z_IMAGE } from "../constants/imageGeneration";
@@ -51,7 +51,7 @@ export function PromptBar() {
         <Plus className="w-5 h-5" />
       </button>
 
-      <div className="relative flex items-center w-[400px] sm:w-[500px] h-12 bg-white rounded-full border border-slate-200 shadow-sm">
+      <div className="flex items-center w-[400px] sm:w-[500px] h-12 bg-white rounded-full border border-slate-200 shadow-sm px-4 gap-2">
         <input
           ref={inputRef}
           type="text"
@@ -61,14 +61,28 @@ export function PromptBar() {
           onKeyDown={handleKeyDown}
           onFocus={() => useCanvasStore.getState().clearSelection()}
           disabled={isGenerating}
-          className="w-full h-full bg-transparent pl-5 pr-14 rounded-full outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px] disabled:opacity-50"
+          className="flex-1 bg-transparent outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px] disabled:opacity-50"
         />
+
+        <div className="w-px h-4 bg-slate-200" />
+
+        <button
+          className="relative shrink-0 w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-amber-500 transition-all group"
+        >
+          <Sparkles size={14} />
+          <span
+            role="tooltip"
+            className="absolute left-1/2 -translate-x-1/2 bottom-[calc(100%+0.5rem)] z-50 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-900 shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          >
+            Advanced options
+          </span>
+        </button>
 
         <button
           onClick={handleSubmit}
           disabled={!canGenerate}
           className={cn(
-            "absolute right-1.5 flex items-center justify-center w-9 h-9 rounded-full transition-colors",
+            "flex items-center justify-center w-9 h-9 rounded-full transition-colors",
             !canGenerate
               ? "bg-slate-200 text-slate-400 cursor-not-allowed"
               : "bg-[#E5DDF5] text-[#634994] hover:bg-[#DACCEE]"
