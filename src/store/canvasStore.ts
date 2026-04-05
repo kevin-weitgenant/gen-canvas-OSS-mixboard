@@ -13,6 +13,7 @@ interface CanvasState {
   clipboardImages: ImageElement[];
   contextMenu: { imageId: string } | null;
   variationsModal: { imageId: string } | null;
+  promptCreatorModal: boolean;
 }
 
 interface CanvasActions {
@@ -31,6 +32,7 @@ interface CanvasActions {
   copyImages: (ids: string[]) => void;
   setContextMenu: (menu: { imageId: string } | null) => void;
   setVariationsModal: (modal: { imageId: string } | null) => void;
+  setPromptCreatorModal: (open: boolean) => void;
 }
 
 type CanvasStore = CanvasState & CanvasActions;
@@ -52,6 +54,7 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   clipboardImages: [],
   contextMenu: null,
   variationsModal: null,
+  promptCreatorModal: false,
 
   addImage: (image) =>
     set((state) => ({ images: [...state.images, image] })),
@@ -127,6 +130,8 @@ export const useCanvasStore = create<CanvasStore>((set) => ({
   setContextMenu: (menu) => set({ contextMenu: menu }),
 
   setVariationsModal: (modal) => set({ variationsModal: modal }),
+
+  setPromptCreatorModal: (open) => set({ promptCreatorModal: open }),
 
   copyImages: (ids) =>
     set((state) => {

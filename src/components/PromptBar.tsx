@@ -11,6 +11,7 @@ export function PromptBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { generateImage } = useImageGeneration();
   const selectedModels = useSelectedModels();
+  const setPromptCreatorModal = useCanvasStore((state) => state.setPromptCreatorModal);
 
   useEffect(() => {
     const canvas = document.querySelector("canvas");
@@ -67,6 +68,7 @@ export function PromptBar() {
         <div className="w-px h-4 bg-slate-200" />
 
         <button
+          onClick={() => setPromptCreatorModal(true)}
           className="relative shrink-0 w-7 h-7 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-amber-500 transition-all group"
         >
           <Sparkles size={14} />

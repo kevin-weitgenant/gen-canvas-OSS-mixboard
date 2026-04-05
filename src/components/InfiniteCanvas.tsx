@@ -9,6 +9,7 @@ import { useCanvasContextMenu } from '../hooks/useCanvasContextMenu';
 import { useCanvasStore } from '../store/canvasStore';
 import { ContextMenu } from './ContextMenu';
 import { CreateVariationsModal } from './CreateVariationsModal';
+import { PromptCreatorModal } from './PromptCreatorModal';
 import type { ResizeHandle } from '../types/canvas';
 
 const CURSORS: Record<ResizeHandle, string> = {
@@ -42,6 +43,8 @@ export function InfiniteCanvas() {
   const setContextMenu = useCanvasStore((state) => state.setContextMenu);
   const variationsModal = useCanvasStore((state) => state.variationsModal);
   const setVariationsModal = useCanvasStore((state) => state.setVariationsModal);
+  const promptCreatorModal = useCanvasStore((state) => state.promptCreatorModal);
+  const setPromptCreatorModal = useCanvasStore((state) => state.setPromptCreatorModal);
 
   const {
     isDragging,
@@ -134,6 +137,9 @@ export function InfiniteCanvas() {
           imageId={variationsModal.imageId}
           onClose={() => setVariationsModal(null)}
         />
+      )}
+      {promptCreatorModal && (
+        <PromptCreatorModal onClose={() => setPromptCreatorModal(false)} />
       )}
     </div>
   );
