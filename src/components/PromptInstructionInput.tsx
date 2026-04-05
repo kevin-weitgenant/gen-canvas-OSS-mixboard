@@ -55,7 +55,7 @@ function TokenizedText({ text, basePrompt }: TokenizedTextProps) {
       {parts.map((part, i) => (
         <span key={i}>
           {part}
-          {i < parts.length - 1 && <TooltipToken basePrompt={basePrompt} />}
+          {i < parts.length - 1 && <TooltipToken basePrompt={basePrompt ?? ''} />}
         </span>
       ))}
     </>
@@ -92,7 +92,7 @@ export function PromptInstructionInput({ value, basePrompt, onChange, placeholde
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => setFocused(false)}
           rows={3}
-          placeholder={`Ex: "Reinterpret ${TOKEN} in art deco style" or "A mountain landscape at sunset"`}
+          placeholder={"Generate different logos for my app that is about ..."}
           className="w-full min-h-20 resize-none rounded-lg border border-blue-400/40 bg-white px-3.5 py-3.5 text-sm text-gray-900 leading-relaxed outline-none shadow-[0_0_0_2px_rgba(85,132,255,0.3)] font-mono placeholder:font-sans placeholder:text-xs placeholder:text-gray-500"
         />
       ) : (

@@ -3,7 +3,6 @@ import { X, Plus, Sparkles, Images, Trash2, Layers} from 'lucide-react';
 import { PromptInstructionInput } from './PromptInstructionInput';
 import { CountSlider } from './variation-modal/CountSlider';
 import { ModelList } from './variation-modal/ModelList';
-import { AutoGrowingTextarea } from './AutoGrowingTextarea';
 import { generatePromptVariations, buildPromptCreatorText } from '../services/geminiApi';
 
 export interface PromptEntry {
@@ -27,7 +26,6 @@ interface BaseVariationsModalProps {
   instructionLabel?: string;
 }
 
-const UPLOAD_INSTRUCTION = 'Describe how to generate prompt variations of this image';
 const GENERATED_INSTRUCTION = 'Modify this {prompt base} to vary style, color, lighting, composition, etc.';
 
 const DEFAULT_PROMPT = 'Abstract modern art painting with bold geometric shapes and vibrant colors on gallery wall';
@@ -58,7 +56,6 @@ export function BaseVariationsModal({
   instructionPlaceholder = 'Describe how to generate prompt variations of this image',
   stepLabel = 'Configure variations',
   variationLabel = 'Variation',
-  emptyInstructionPlaceholder = 'Describe how to generate prompt variations of this image',
   instructionLabel,
 }: BaseVariationsModalProps) {
   const isGenerated = isInitiallyGenerated && !!initialBasePrompt;
@@ -286,12 +283,11 @@ export function BaseVariationsModal({
                         <Trash2 size={12} />
                       </button>
                     </div>
-                    <AutoGrowingTextarea
+                    <textarea
                       value={p.text}
-                      onChange={(value) => updateText(p.id, value)}
-                      minRows={3}
-                      maxRows={8}
-                      className="w-full resize-none rounded-md border border-gray-200 bg-white px-2 py-2 text-xs text-gray-900 leading-relaxed outline-none focus:shadow-[0_0_0_1px_rgba(85,132,255,1)]"
+                      onChange={(e) => updateText(p.id, e.target.value)}
+                      rows={5}
+                      className="w-full resize-y rounded-md border border-gray-200 bg-white px-2 py-2 text-xs text-gray-900 leading-relaxed outline-none focus:shadow-[0_0_0_1px_rgba(85,132,255,1)]"
                     />
                     <ModelList models={p.models} onChange={(models) => updateModels(p.id, models)} />
                   </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BaseVariationsModal } from './BaseVariationsModal';
 import { useCanvasStore } from '../store/canvasStore';
 
@@ -16,7 +16,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   const imageSrc = image?.src || '';
 
   // Local state for base prompt (editable)
-  const [basePrompt, setBasePrompt] = useState(originalPrompt || '');
+  const [basePrompt] = useState(originalPrompt || '');
 
   return (
     <BaseVariationsModal

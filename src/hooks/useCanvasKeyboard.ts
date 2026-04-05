@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import type { RefObject } from 'react';
 import { useCanvasStore } from '../store/canvasStore';
 import { useCanvasClipboard } from './useCanvasClipboard';
-import { toTrueX, toTrueY } from '../utils/coordinates';
 import type { Viewport, Tool } from '../types/canvas';
 
 interface UseCanvasKeyboardOptions {
