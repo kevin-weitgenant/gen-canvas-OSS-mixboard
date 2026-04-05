@@ -39,7 +39,12 @@ export function ContextMenu({ imageId, onClose }: ContextMenuProps) {
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement download functionality
+    if (image) {
+      const a = document.createElement('a');
+      a.href = image.src;
+      a.download = `image-${image.id}.png`;
+      a.click();
+    }
     onClose();
   };
 
