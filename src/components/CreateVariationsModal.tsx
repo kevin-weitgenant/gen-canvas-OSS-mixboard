@@ -3,6 +3,7 @@ import { X, Plus, Sparkles, Images, Trash2, Layers, PlusCircle, XCircle } from '
 import { useCanvasStore } from '../store/canvasStore';
 import { PromptInstructionInput } from './PromptInstructionInput';
 import { ModelCombobox } from './ModelCombobox';
+import { generatePromptVariations, buildPromptCreatorText } from '../services/geminiApi';
 
 interface PromptEntry {
   id: string;
@@ -176,12 +177,34 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  // Build the prompt that will be sent to Gemini
+  const resolvedInstruction = isGenerated
+    ? instruction.replace('{prompt base}', basePrompt)
+    : instruction;
+  const geminiPrompt = buildPromptCreatorText(resolvedInstruction, count);
+
   async function handleGenerate() {
     setGenerating(true);
-    await new Promise((r) => setTimeout(r, 650));
-    setPrompts(Array.from({ length: count }, (_, i) => makeEntry(`${isGenerated ? basePrompt + ', ' : ''}${SUFFIXES[i % SUFFIXES.length]}`)));
-    setGenerated(true);
-    setGenerating(false);
+    try {
+      // Resolve {prompt base} token if present
+      const resolvedInstruction = isGenerated
+        ? instruction.replace('{prompt base}', basePrompt)
+        : instruction;
+
+      console.log('🔧 [Variations Modal] Resolved instruction:', resolvedInstruction);
+
+      const generatedPrompts = await generatePromptVariations(resolvedInstruction, count);
+      setPrompts(generatedPrompts.map((text) => makeEntry(text)));
+      setGenerated(true);
+    } catch (error) {
+      console.error('❌ [Variations Modal] Failed to generate prompt variations:', error);
+      // Fallback to suffix-based generation on error
+      console.log('⬇️ [Variations Modal] Falling back to suffix-based generation');
+      setPrompts(Array.from({ length: count }, (_, i) => makeEntry(`${isGenerated ? basePrompt + ', ' : ''}${SUFFIXES[i % SUFFIXES.length]}`)));
+      setGenerated(true);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   function updateText(id: string, text: string) {
@@ -317,6 +340,7 @@ export function CreateVariationsModal({ imageId, onClose }: CreateVariationsModa
             <button
               onClick={handleGenerate}
               disabled={generating || !basePrompt.trim()}
+              title={geminiPrompt}
               className="flex items-center justify-center gap-2 w-full rounded-lg p-3 text-sm font-semibold bg-blue-500 text-white border-none cursor-pointer transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-none hover:shadow-[0_0_20px_rgba(85,132,255,0.3)] disabled:shadow-none"
             >
               <Sparkles size={14} className={generating ? 'animate-spin' : ''} />
