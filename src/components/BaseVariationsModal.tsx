@@ -279,7 +279,7 @@ export function BaseVariationsModal({
             <button
               onClick={handleGenerate}
               disabled={generating || (!isGenerated && !instruction.trim())}
-              title={`Generate ${count} variations based on: ${resolvedInstruction}`}
+              title={`Generate ${count} different image prompt variations based on this instruction: ${resolvedInstruction}`}
               className="flex items-center justify-center gap-2 w-full rounded-lg p-3 text-sm font-semibold bg-blue-500 text-white border-none cursor-pointer transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-none hover:shadow-[0_0_20px_rgba(85,132,255,0.3)] disabled:shadow-none"
             >
               <Sparkles size={14} className={generating ? 'animate-spin' : ''} />
