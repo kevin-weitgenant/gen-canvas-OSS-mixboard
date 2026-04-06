@@ -9,7 +9,12 @@
       "Bash(npm list:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npx eslint:*)",
-      "Bash(npx vite-ts-type-check:*)"
+      "Bash(npx vite-ts-type-check:*)",
+      "Bash(uv init:*)",
+      "Bash(git log:*)",
+      "Bash(python -m pylint *.py routers/*.py services/*.py schemas/*.py)",
+      "Bash(python -m mypy *.py routers/*.py services/*.py schemas/*.py)",
+      "Bash(uv run:*)"
     ]
   }
 }

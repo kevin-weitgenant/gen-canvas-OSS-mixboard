@@ -1,54 +1,115 @@
 import { useCanvasStore } from '../store/canvasStore';
-import { createTask, getTaskStatus } from '../services/zImageApi';
-import { createPollingTask } from '../services/pollingService';
 import { calculateViewportCenter } from '../utils/viewport';
 import { generateImageId } from '../utils/id';
 import { loadImage } from '../utils/image';
-import {
-  DEFAULT_IMAGE_SIZE,
-  POLLING_INTERVAL,
-} from '../constants/imageGeneration';
-import type { ImageLoadingState } from '../types/zImage';
+import { sseManager, type WebhookEvent } from '../services/sseConnectionManager';
+import { DEFAULT_IMAGE_SIZE } from '../constants/imageGeneration';
 import type { ImageSource } from '../types/canvas';
+import { generateImageApiGeneratePost } from '../api/generated';
+import type { GenerateRequest } from '../api/models';
 
 export function useImageGeneration() {
   const { addImage, updateImage, viewport } = useCanvasStore();
 
-  const generateImage = async (prompt: string): Promise<string | null> => {
-    try {
-      const taskId = await createTask(prompt);
-      const imageId = generateImageId();
-      const position = calculateViewportCenter(viewport, DEFAULT_IMAGE_SIZE);
+  const generateImage = async (
+    prompt: string,
+    aspectRatio: string = '1:1'
+  ): Promise<string | null> => {
+    // 1. Create image placeholder FIRST - shows skeleton immediately
+    const imageId = generateImageId();
+    const position = calculateViewportCenter(viewport, DEFAULT_IMAGE_SIZE);
 
-      // Add loading placeholder
-      const source: ImageSource = {
-        type: 'generated',
+    const source: ImageSource = {
+      type: 'generated',
+      prompt,
+    };
+
+    addImage({
+      id: imageId,
+      type: 'image',
+      src: '',
+      x: position.x,
+      y: position.y,
+      width: DEFAULT_IMAGE_SIZE,
+      height: DEFAULT_IMAGE_SIZE,
+      isLoading: true,
+      loadingState: 'creating',
+      source,
+    });
+
+    try {
+      // 2. Call FastAPI server - returns immediately with taskId
+      const response = await generateImageApiGeneratePost({
         prompt,
-      };
-      addImage({
-        id: imageId,
-        type: 'image',
-        src: '',
-        x: position.x,
-        y: position.y,
-        width: DEFAULT_IMAGE_SIZE,
-        height: DEFAULT_IMAGE_SIZE,
-        isLoading: true,
-        loadingState: 'creating',
-        source,
+        aspect_ratio: aspectRatio,
+      } satisfies GenerateRequest);
+
+      if (response.status !== 200) {
+        throw new Error('Failed to generate image');
+      }
+
+      const { taskId, sseUrl } = response.data;
+
+      console.log('[ImageGeneration] Task created:', { taskId, sseUrl });
+
+      // 3. Listen for webhook via SSE
+      sseManager.connect(imageId, sseUrl, {
+        onMessage: async (event: WebhookEvent) => {
+          console.log('[ImageGeneration] SSE event received:', { imageId, event });
+          switch (event.state) {
+            case 'waiting':
+            case 'queuing':
+              console.log('[ImageGeneration] State: waiting/queuing -> creating');
+              updateImage(imageId, { loadingState: 'creating' });
+              break;
+
+            case 'generating':
+              console.log('[ImageGeneration] State: generating -> polling');
+              updateImage(imageId, { loadingState: 'polling' });
+              break;
+
+            case 'success':
+              console.log('[ImageGeneration] State: success');
+              handleSuccess(event, imageId);
+              break;
+
+            case 'fail':
+              console.log('[ImageGeneration] State: fail');
+              handleFailure(imageId);
+              break;
+          }
+        },
+        onError: () => {
+          handleFailure(imageId);
+        },
       });
 
-      // Start polling
-      const stopPolling = createPollingTask({
-        interval: POLLING_INTERVAL,
-        getStatus: () => getTaskStatus(taskId),
-        onSuccess: async (resultUrls) => {
-          const imageUrl = resultUrls[0];
+      return imageId;
+    } catch (error) {
+      console.error('Failed to generate image:', error);
+      // Update skeleton to show failed state
+      updateImage(imageId, {
+        isLoading: false,
+        loadingState: 'failed',
+      });
+      return null;
+    }
+  };
+
+  const handleSuccess = async (event: WebhookEvent, imageId: string) => {
+    console.log('[ImageGeneration] Handling success:', { imageId, event });
+    if (event.resultJson) {
+      try {
+        const result = JSON.parse(event.resultJson);
+        const imageUrl = result.resultUrls?.[0];
+
+        if (imageUrl) {
           // Set downloading state and URL
           updateImage(imageId, {
             src: imageUrl,
             loadingState: 'downloading',
           });
+
           // Preload image before showing
           try {
             await loadImage(imageUrl);
@@ -57,34 +118,41 @@ export function useImageGeneration() {
               loadingState: 'success',
             });
           } catch (error) {
+            console.error('Failed to load image:', error);
             updateImage(imageId, {
               isLoading: false,
               loadingState: 'failed',
             });
           }
-        },
-        onError: () => {
-          updateImage(imageId, {
-            isLoading: false,
-            loadingState: 'failed',
-          });
-        },
-        onProgress: (state) => {
-          const loadingState: ImageLoadingState =
-            state === 'waiting' || state === 'queuing' ? 'creating' : 'polling';
-          updateImage(imageId, { loadingState });
-        },
-      });
-
-      // Store cleanup function on the window for potential external cleanup
-      (window as unknown as { _stopPolling?: () => void })._stopPolling = stopPolling;
-
-      return imageId;
-    } catch (error) {
-      console.error('Failed to generate image:', error);
-      return null;
+        }
+      } catch (error) {
+        console.error('Failed to parse resultJson:', error);
+        handleFailure(imageId);
+      }
     }
+
+    // Disconnect SSE on success
+    sseManager.disconnect(imageId);
   };
 
-  return { generateImage };
+  const handleFailure = (imageId: string) => {
+    console.log('[ImageGeneration] Handling failure:', { imageId });
+    updateImage(imageId, {
+      isLoading: false,
+      loadingState: 'failed',
+    });
+    sseManager.disconnect(imageId);
+  };
+
+  // Cleanup function for component unmount
+  const cleanup = (imageId: string) => {
+    sseManager.disconnect(imageId);
+  };
+
+  // Cleanup all on unmount
+  const cleanupAll = () => {
+    sseManager.disconnectAll();
+  };
+
+  return { generateImage, cleanup, cleanupAll };
 }

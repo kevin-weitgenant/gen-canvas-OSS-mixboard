@@ -7,7 +7,6 @@ import { cn } from "../lib/utils";
 
 export function PromptBar() {
   const [prompt, setPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { generateImage } = useImageGeneration();
   const selectedModels = useSelectedModels();
@@ -23,20 +22,16 @@ export function PromptBar() {
     return () => canvas?.removeEventListener("mousedown", handleCanvasClick);
   }, []);
 
-  const canGenerate = prompt.trim() && !isGenerating && selectedModels.includes(MODEL_Z_IMAGE);
+  const canGenerate = prompt.trim() && selectedModels.includes(MODEL_Z_IMAGE);
 
   const handleSubmit = async () => {
     if (!canGenerate) return;
 
-    setIsGenerating(true);
-    try {
-      await generateImage(prompt);
-      setPrompt("");
-    } catch (error) {
-      console.error("Failed to generate image:", error);
-    } finally {
-      setIsGenerating(false);
-    }
+    // Clear input immediately for better UX
+    setPrompt("");
+
+    // Each request is independent - parallel generation enabled
+    await generateImage(prompt);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,8 +56,7 @@ export function PromptBar() {
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => useCanvasStore.getState().clearSelection()}
-          disabled={isGenerating}
-          className="flex-1 bg-transparent outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px] disabled:opacity-50"
+          className="flex-1 bg-transparent outline-none text-slate-700 placeholder-[#8A8F9E] font-medium text-[15px]"
         />
 
         <div className="w-px h-4 bg-slate-200" />

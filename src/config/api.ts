@@ -1,8 +1,8 @@
-const API_BASE_URL = 'https://api.kie.ai';
-const API_KEY = import.meta.env.VITE_KIE_AI_API_KEY;
+const FASTAPI_URL = import.meta.env.VITE_FASTAPI_URL || 'http://localhost:8000';
+const API_KEY = import.meta.env.VITE_KIE_AI_API_KEY || '';
 
-if (!API_KEY) {
-  console.warn('VITE_KIE_AI_API_KEY is not configured');
+if (!FASTAPI_URL) {
+  console.warn('VITE_FASTAPI_URL is not configured');
 }
 
-export { API_BASE_URL, API_KEY };
+export { FASTAPI_URL, API_KEY };

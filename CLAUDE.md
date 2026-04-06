@@ -3,6 +3,12 @@
 ## Important Restrictions
 
 
+
+- **Frontend:** Use `pnpm` exclusively for all package management.
+- **Backend:** Use `uv` exclusively; add dependencies only via `uv add` (do not use `uv pip`).
+
+
+
 - **Prioritize using less props as possible**. No need of for example passing some zustand state as props to a component if it can be accessed directly from the component. This will help to keep the code cleaner and more maintainable.
 
 - **Never run `npm run dev`**: Do not start the development server. The user will run it manually when needed. 

@@ -422,7 +422,7 @@ interface ImageElement {
   width: number;                    // Display width
   height: number;                   // Display height
   isLoading?: boolean;              // Loading state flag
-  loadingState?: 'idle' | 'creating' | 'polling' | 'success' | 'failed';
+  loadingState?: 'idle' | 'creating' | 'polling' | 'downloading' | 'success' | 'failed';
 }
 ```
 
