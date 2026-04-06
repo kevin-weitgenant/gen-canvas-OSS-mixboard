@@ -3,6 +3,7 @@ import { InfiniteCanvas } from './components/InfiniteCanvas';
 import { Toolbar } from './components/Toolbar';
 import { PromptBar } from './components/PromptBar';
 import { ModelSelector } from './components/ModelSelector';
+import { Toaster } from 'sonner';
 import { useCanvasStore } from './store/canvasStore';
 import { sseManager } from './services/sseConnectionManager';
 
@@ -22,6 +23,16 @@ function App() {
       <InfiniteCanvas />
       {!variationsModal && <ModelSelector />}
       {!variationsModal && <PromptBar />}
+      <Toaster
+        closeButton
+        duration={999999}
+        position="top-right"
+        toastOptions={{
+          classNames: {
+            toast: 'z-[200]',
+          },
+        }}
+      />
     </div>
   );
 }

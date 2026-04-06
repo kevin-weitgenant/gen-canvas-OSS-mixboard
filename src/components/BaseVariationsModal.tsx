@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Sparkles, Images, Trash2, Layers} from 'lucide-react';
+import { toast } from 'sonner';
 import { PromptInstructionInput } from './PromptInstructionInput';
 import { CountSlider } from './variation-modal/CountSlider';
 import { ModelList } from './variation-modal/ModelList';
-import { generatePromptVariations, buildPromptCreatorText } from '../services/geminiApi';
+import { createPromptVariationsApiChatVariationsPost } from '../api/generated';
 
 export interface PromptEntry {
   id: string;
@@ -85,11 +86,10 @@ export function BaseVariationsModal({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Build the prompt that will be sent to Gemini
+  // Build the prompt that will be sent to the API
   const resolvedInstruction = isGenerated
     ? instruction.replace('{prompt base}', basePrompt)
     : instruction;
-  const geminiPrompt = buildPromptCreatorText(resolvedInstruction, count);
 
   async function handleGenerate() {
     setGenerating(true);
@@ -100,11 +100,42 @@ export function BaseVariationsModal({
 
       console.log('🔧 [Variations Modal] Resolved instruction:', resolvedInstruction);
 
-      const generatedPrompts = await generatePromptVariations(resolvedInstruction, count);
-      setPrompts(generatedPrompts.map((text) => makeEntry(text)));
+      const response = await createPromptVariationsApiChatVariationsPost({
+        instruction: resolvedInstruction,
+        count,
+      });
+
+      if (response.status === 200 && response.data.prompts) {
+        setPrompts(response.data.prompts.map((text) => makeEntry(text)));
+      } else {
+        throw new Error('Invalid response from API');
+      }
       setGenerated(true);
     } catch (error) {
       console.error('❌ [Variations Modal] Failed to generate prompt variations:', error);
+
+      // Extract error message from API response
+      let errorMessage = 'AI generation failed. Using fallback generation.';
+      let errorDetails = 'Please try again or modify your instruction.';
+
+      if (error && typeof error === 'object') {
+        const err = error as { data?: { detail?: { message?: string; original_error?: string } } };
+        if (err.data?.detail?.message) {
+          errorMessage = err.data.detail.message;
+        }
+        if (err.data?.detail?.original_error) {
+          errorDetails = err.data.detail.original_error;
+        }
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      // Show toast with error details
+      toast.error(errorMessage, {
+        description: errorDetails,
+        duration: 999999, // Only dismiss on click
+      });
+
       console.log('⬇️ [Variations Modal] Falling back to suffix-based generation');
       setPrompts(Array.from({ length: count }, (_, i) => makeEntry(
         isGenerated
@@ -248,7 +279,7 @@ export function BaseVariationsModal({
             <button
               onClick={handleGenerate}
               disabled={generating || (!isGenerated && !instruction.trim())}
-              title={geminiPrompt}
+              title={`Generate ${count} variations based on: ${resolvedInstruction}`}
               className="flex items-center justify-center gap-2 w-full rounded-lg p-3 text-sm font-semibold bg-blue-500 text-white border-none cursor-pointer transition-all hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-none hover:shadow-[0_0_20px_rgba(85,132,255,0.3)] disabled:shadow-none"
             >
               <Sparkles size={14} className={generating ? 'animate-spin' : ''} />

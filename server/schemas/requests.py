@@ -8,3 +8,9 @@ class GenerateRequest(BaseModel):
     prompt: str
     aspect_ratio: str = "1:1"
     nsfw_checker: bool = False
+
+
+class ChatVariationsRequest(BaseModel):
+    """Schema for chat prompt variations request."""
+    instruction: str
+    count: int = 3

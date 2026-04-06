@@ -6,6 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 import type {
+  ChatVariationsRequest,
+  ChatVariationsResponse,
   GenerateRequest,
   GenerateResponse,
   HTTPValidationError,
@@ -58,6 +60,52 @@ export const generateImageApiGeneratePost = async (
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
       body: JSON.stringify(generateRequest),
+    },
+  );
+};
+
+/**
+ * Generate multiple variations of an image prompt using AI.
+ * @summary Generate Prompt Variations
+ */
+export type createPromptVariationsApiChatVariationsPostResponse200 = {
+  data: ChatVariationsResponse;
+  status: 200;
+};
+
+export type createPromptVariationsApiChatVariationsPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createPromptVariationsApiChatVariationsPostResponseSuccess =
+  createPromptVariationsApiChatVariationsPostResponse200 & {
+    headers: Headers;
+  };
+export type createPromptVariationsApiChatVariationsPostResponseError =
+  createPromptVariationsApiChatVariationsPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createPromptVariationsApiChatVariationsPostResponse =
+  | createPromptVariationsApiChatVariationsPostResponseSuccess
+  | createPromptVariationsApiChatVariationsPostResponseError;
+
+export const getCreatePromptVariationsApiChatVariationsPostUrl = () => {
+  return `/api/chat/variations`;
+};
+
+export const createPromptVariationsApiChatVariationsPost = async (
+  chatVariationsRequest: ChatVariationsRequest,
+  options?: RequestInit,
+): Promise<createPromptVariationsApiChatVariationsPostResponse> => {
+  return customFetch<createPromptVariationsApiChatVariationsPostResponse>(
+    getCreatePromptVariationsApiChatVariationsPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(chatVariationsRequest),
     },
   );
 };

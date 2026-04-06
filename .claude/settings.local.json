@@ -2,8 +2,7 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Bash(npm create:*)",
-      "Bash(npm install:*)",
+    
       "Bash(npm run:*)",
       "Bash(npx tsc:*)",
       "Bash(npm list:*)",
@@ -14,7 +13,8 @@
       "Bash(git log:*)",
       "Bash(python -m pylint *.py routers/*.py services/*.py schemas/*.py)",
       "Bash(python -m mypy *.py routers/*.py services/*.py schemas/*.py)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(uv add:*)"
     ]
   }
 }

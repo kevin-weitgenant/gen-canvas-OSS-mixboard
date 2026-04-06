@@ -3,6 +3,15 @@
 ## Important Restrictions
 
 
+### API Consumption Guidelines (Frontend)
+
+- Do **not** manually write API consumption code (e.g., fetch/axios calls) for backend endpoints in the frontend.
+- Always use **Orval** to generate typed API clients from the OpenAPI schema.
+- This ensures:
+  - Type safety across frontend and backend
+  - Consistent request/response handling
+  - Reduced boilerplate and fewer bugs
+  - Easier maintenance as the API evolves
 
 - **Frontend:** Use `pnpm` exclusively for all package management.
 - **Backend:** Use `uv` exclusively; add dependencies only via `uv add` (do not use `uv pip`).

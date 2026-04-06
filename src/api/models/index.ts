@@ -6,6 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 
+export * from "./chatVariationsRequest";
+export * from "./chatVariationsResponse";
 export * from "./generateRequest";
 export * from "./generateResponse";
 export * from "./hTTPValidationError";

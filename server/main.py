@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import settings  # type: ignore
-from routers import generate, webhook, sse
+from routers import generate, webhook, sse, chat
 
 app = FastAPI(
     title="Infinite Canvas Image Generation API",
@@ -17,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(generate.router, prefix="/api", tags=["generate"])
+app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(webhook.router, prefix="/webhook", tags=["webhook"])
 app.include_router(sse.router, prefix="/sse", tags=["sse"])
 

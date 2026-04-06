@@ -13,3 +13,8 @@ class GenerateResponse(BaseModel):
 class WebhookResponse(BaseModel):
     """Schema for webhook response."""
     status: str
+
+
+class ChatVariationsResponse(BaseModel):
+    """Schema for chat prompt variations response."""
+    prompts: list[str]
