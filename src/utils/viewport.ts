@@ -7,8 +7,9 @@ export function calculateViewportCenter(
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
 
-  const worldX = (centerX - viewport.offsetX) / viewport.scale;
-  const worldY = (centerY - viewport.offsetY) / viewport.scale;
+  // Use correct transformation matching toTrueX/toTrueY from coordinates.ts
+  const worldX = centerX / viewport.scale - viewport.offsetX;
+  const worldY = centerY / viewport.scale - viewport.offsetY;
 
   return {
     x: worldX - imageSize / 2,

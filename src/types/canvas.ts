@@ -18,7 +18,7 @@ export interface ImageElement {
   width: number;
   height: number;
   isLoading?: boolean;
-  loadingState?: 'idle' | 'creating' | 'polling' | 'success' | 'failed';
+  loadingState?: 'idle' | 'creating' | 'polling' | 'downloading' | 'success' | 'failed';
   source?: ImageSource;
 }
 

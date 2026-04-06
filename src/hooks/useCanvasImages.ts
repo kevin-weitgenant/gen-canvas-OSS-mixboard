@@ -94,9 +94,19 @@ function useCanvasImages(
         const centerX = screenX + screenWidth / 2;
         const centerY = screenY + screenHeight / 2;
 
+        // Map loading state to display text
+        const getLoadingText = (loadingState: string): string => {
+          switch (loadingState) {
+            case 'creating': return 'Creating';
+            case 'polling': return 'Generating';
+            case 'downloading': return 'Downloading';
+            default: return 'Loading';
+          }
+        };
+
         // Animated dots effect (based on time)
         const dots = Math.floor(Date.now() / 500) % 4;
-        const loadingText = 'Generating' + '.'.repeat(dots);
+        const loadingText = getLoadingText(toRender.loadingState || 'loading') + '.'.repeat(dots);
         ctx.fillText(loadingText, centerX, centerY);
         ctx.restore();
 

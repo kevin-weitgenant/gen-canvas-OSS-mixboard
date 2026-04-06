@@ -3,6 +3,7 @@ import { createTask, getTaskStatus } from '../services/zImageApi';
 import { createPollingTask } from '../services/pollingService';
 import { calculateViewportCenter } from '../utils/viewport';
 import { generateImageId } from '../utils/id';
+import { loadImage } from '../utils/image';
 import {
   DEFAULT_IMAGE_SIZE,
   POLLING_INTERVAL,
@@ -41,12 +42,26 @@ export function useImageGeneration() {
       const stopPolling = createPollingTask({
         interval: POLLING_INTERVAL,
         getStatus: () => getTaskStatus(taskId),
-        onSuccess: (resultUrls) => {
+        onSuccess: async (resultUrls) => {
+          const imageUrl = resultUrls[0];
+          // Set downloading state and URL
           updateImage(imageId, {
-            src: resultUrls[0],
-            isLoading: false,
-            loadingState: 'success',
+            src: imageUrl,
+            loadingState: 'downloading',
           });
+          // Preload image before showing
+          try {
+            await loadImage(imageUrl);
+            updateImage(imageId, {
+              isLoading: false,
+              loadingState: 'success',
+            });
+          } catch (error) {
+            updateImage(imageId, {
+              isLoading: false,
+              loadingState: 'failed',
+            });
+          }
         },
         onError: () => {
           updateImage(imageId, {
