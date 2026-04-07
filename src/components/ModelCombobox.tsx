@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
-import { Search, Check, ChevronDown } from 'lucide-react';
-import { useOutsideClick } from '../hooks/useOutsideClick';
-import { MODELS, TAG_STYLES, DEFAULT_TAG_STYLE } from './modelConstants';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Search, Check, ChevronDown, Ban } from 'lucide-react';
+import { MODELS, TAG_STYLES, DEFAULT_TAG_STYLE, ENABLED_MODEL } from './modelConstants';
 
 interface ModelComboboxProps {
   value: string;
@@ -11,7 +11,9 @@ interface ModelComboboxProps {
 export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState<string>('');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = MODELS.find((m) => m.value === value);
@@ -20,10 +22,24 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
     ? MODELS.filter((m) => m.label.toLowerCase().includes(query.toLowerCase()) || m.tag.toLowerCase().includes(query.toLowerCase()))
     : MODELS;
 
-  useOutsideClick(containerRef, () => {
-    setOpen(false);
-    setQuery('');
-  }, open);
+  // Handle outside click - check both button and dropdown (for portal)
+  useEffect(() => {
+    if (!open) return;
+
+    function handler(e: MouseEvent) {
+      const target = e.target as Node;
+      const outsideButton = buttonRef.current && !buttonRef.current.contains(target);
+      const outsideDropdown = dropdownRef.current && !dropdownRef.current.contains(target);
+
+      if (outsideButton && outsideDropdown) {
+        setOpen(false);
+        setQuery('');
+      }
+    }
+
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
 
   function pick(v: string) {
     onChange(v);
@@ -32,6 +48,13 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
   }
 
   function openDropdown() {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setPosition({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    });
     setOpen(true);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -39,8 +62,9 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
   const getTagStyle = (tag: string) => TAG_STYLES[tag] || DEFAULT_TAG_STYLE;
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <button
+        ref={buttonRef}
         type="button"
         onClick={openDropdown}
         aria-haspopup="listbox"
@@ -58,43 +82,60 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
         <ChevronDown size={11} className={`flex-shrink-0 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-[calc(100%+0.25rem)] z-50 w-full min-w-[220px] rounded-lg border border-gray-200 bg-white shadow-xl overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-gray-200 p-2">
-            <Search size={11} className="flex-shrink-0 text-gray-500" />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search model…"
-              className="flex-1 bg-transparent text-xs text-gray-900 border-none outline-none placeholder:text-gray-500"
-            />
-          </div>
+      {open &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed rounded-lg border border-gray-200 bg-white shadow-xl overflow-hidden z-[102]"
+            style={{
+              top: `${position.top}px`,
+              left: `${position.left}px`,
+              width: `${position.width}px`,
+              minWidth: '220px',
+            }}
+          >
+            <div className="flex items-center gap-2 border-b border-gray-200 p-2">
+              <Search size={11} className="flex-shrink-0 text-gray-500" />
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search model…"
+                className="flex-1 bg-transparent text-xs text-gray-900 border-none outline-none placeholder:text-gray-500"
+              />
+            </div>
 
-          <ul role="listbox" className="max-h-48 overflow-y-auto py-1">
-            {filtered.length === 0 && (
-              <li className="px-2.5 py-1.5 text-xs text-gray-500">No results for "{query}"</li>
-            )}
-            {filtered.map((m) => (
-              <li
-                key={m.value}
-                role="option"
-                aria-selected={m.value === value}
-                onClick={() => pick(m.value)}
-                className={`flex items-center justify-between gap-2 px-2.5 py-1.5 text-xs text-gray-900 cursor-pointer transition-colors ${m.value === value ? 'bg-blue-100' : 'hover:bg-slate-50'}`}
-              >
-                <span className="flex items-center gap-1.5 min-w-0">
-                  <span className="truncate">{m.label}</span>
-                  <span className={`flex-shrink-0 rounded-full px-1 py-0.5 text-[0.5625rem] font-medium leading-none border ${getTagStyle(m.tag)}`}>
-                    {m.tag}
-                  </span>
-                </span>
-                {m.value === value && <Check size={11} className="flex-shrink-0 text-blue-500" />}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+            <ul role="listbox" className="max-h-48 overflow-y-auto py-1">
+              {filtered.length === 0 && (
+                <li className="px-2.5 py-1.5 text-xs text-gray-500">No results for "{query}"</li>
+              )}
+              {filtered.map((m) => {
+                const isEnabled = m.value === ENABLED_MODEL;
+                return (
+                  <li
+                    key={m.value}
+                    role="option"
+                    aria-selected={m.value === value}
+                    aria-disabled={!isEnabled}
+                    onClick={() => isEnabled && pick(m.value)}
+                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 text-xs transition-colors ${isEnabled ? 'text-gray-900 cursor-pointer' : 'text-gray-400 cursor-not-allowed opacity-60'} ${m.value === value && isEnabled ? 'bg-blue-100' : isEnabled ? 'hover:bg-slate-50' : ''}`}
+                  >
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className="truncate">{m.label}</span>
+                      <span className={`flex-shrink-0 rounded-full px-1 py-0.5 text-[0.5625rem] font-medium leading-none border ${isEnabled ? getTagStyle(m.tag) : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                        {m.tag}
+                      </span>
+                    </span>
+                    {m.value === value && isEnabled && <Check size={11} className="flex-shrink-0 text-blue-500" />}
+                    {!isEnabled && <Ban size={11} className="flex-shrink-0 text-gray-400" />}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 }

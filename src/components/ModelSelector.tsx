@@ -1,44 +1,8 @@
 import { useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Ban } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useCanvasStore, useSelectedModels } from "../store/canvasStore";
-
-interface Model {
-  id: string;
-  name: string;
-  color: string;
-}
-
-const models: Model[] = [
-  // Seedream Models
-  { id: "seedream-3", name: "Seedream 3.0", color: "#10B981" },
-  { id: "seedream-4", name: "Seedream 4.0", color: "#10B981" },
-  { id: "seedream-4.5", name: "Seedream 4.5", color: "#10B981" },
-  { id: "seedream-5-lite", name: "Seedream 5.0 Lite", color: "#10B981" },
-  // Google Models
-  { id: "imagen4", name: "Imagen4", color: "#3B82F6" },
-  { id: "imagen4-fast", name: "Imagen4 Fast", color: "#3B82F6" },
-  { id: "imagen4-ultra", name: "Imagen4 Ultra", color: "#3B82F6" },
-  { id: "nano-banana", name: "Nano Banana", color: "#F59E0B" },
-  { id: "nano-banana-2", name: "Nano Banana 2", color: "#F59E0B" },
-  // Flux Models
-  { id: "flux-2", name: "Flux-2", color: "#8B5CF6" },
-  { id: "flux-2-pro", name: "Flux-2 Pro", color: "#8B5CF6" },
-  { id: "flux-kontext", name: "Flux Kontext", color: "#8B5CF6" },
-  // OpenAI / GPT Models
-  { id: "4o-image", name: "4o Image", color: "#EC4899" },
-  { id: "gpt-image-1.5", name: "GPT Image-1.5", color: "#EC4899" },
-  // Qwen (Alibaba) Models
-  { id: "qwen", name: "Qwen", color: "#F97316" },
-  { id: "qwen2", name: "Qwen2", color: "#F97316" },
-  // Wan Models
-  { id: "wan-2.7-image", name: "Wan 2.7 Image", color: "#06B6D4" },
-  { id: "wan-2.7-image-pro", name: "Wan 2.7 Image Pro", color: "#06B6D4" },
-  // Standalone & Other Models
-  { id: "ideogram-v3", name: "Ideogram V3", color: "#EF4444" },
-  { id: "grok-imagine", name: "Grok Imagine", color: "#6366F1" },
-  { id: "z-image", name: "Z-Image", color: "#14B8A6" },
-];
+import { KIE_AI_MODELS, ENABLED_MODEL } from "./modelConstants";
 
 export function ModelSelector() {
   const selectedModels = useSelectedModels();
@@ -98,25 +62,29 @@ export function ModelSelector() {
             display: none;
           }
         `}</style>
-        {models.map((model) => {
+        {KIE_AI_MODELS.map((model) => {
           const isSelected = selectedModels.includes(model.id);
+          const isEnabled = model.id === ENABLED_MODEL;
           return (
             <button
               key={model.id}
-              onClick={() => !hasDragged && toggleModel(model.id)}
+              onClick={() => !hasDragged && isEnabled && toggleModel(model.id)}
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                isSelected
+                isSelected && isEnabled
                   ? "bg-[#634994] text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  : isEnabled
+                    ? "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                    : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60"
               )}
             >
               <span
                 className="w-2 h-2 rounded-full shrink-0"
-                style={{ backgroundColor: model.color }}
+                style={{ backgroundColor: isEnabled ? model.color : "#94a3b8" }}
               />
               {model.name}
-              {isSelected && <Check className="w-4 h-4 shrink-0" />}
+              {isSelected && isEnabled && <Check className="w-4 h-4 shrink-0" />}
+              {!isEnabled && <Ban className="w-3 h-3 shrink-0 ml-1" />}
             </button>
           );
         })}
