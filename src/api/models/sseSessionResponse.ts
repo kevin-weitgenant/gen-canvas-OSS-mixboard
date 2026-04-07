@@ -7,11 +7,10 @@
  */
 
 /**
- * Schema for image generation request.
+ * Schema for SSE session creation response.
  */
-export interface GenerateRequest {
-  prompt: string;
-  aspect_ratio?: string;
-  nsfw_checker?: boolean;
-  api_key: string;
+export interface SseSessionResponse {
+  sessionId: string;
+  webhookUrl: string;
+  sseUrl: string;
 }

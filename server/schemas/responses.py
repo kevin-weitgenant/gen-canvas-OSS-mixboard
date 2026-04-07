@@ -3,11 +3,11 @@
 from pydantic import BaseModel
 
 
-class GenerateResponse(BaseModel):
-    """Schema for image generation response."""
-    taskId: str
+class SseSessionResponse(BaseModel):
+    """Schema for SSE session creation response."""
+    sessionId: str
+    webhookUrl: str
     sseUrl: str
-    zTaskId: str
 
 
 class WebhookResponse(BaseModel):

@@ -5,8 +5,7 @@ import { loadImage } from '../utils/image';
 import { sseManager, type WebhookEvent } from '../services/sseConnectionManager';
 import { DEFAULT_IMAGE_SIZE } from '../constants/imageGeneration';
 import type { ImageSource } from '../types/canvas';
-import { generateImageApiGeneratePost } from '../api/generated';
-import type { GenerateRequest } from '../api/models';
+import { createSseSessionApiSseSessionPost } from '../api/generated';
 import { getApiKey } from '../components/KeyForm';
 
 export function useImageGeneration() {
@@ -39,27 +38,49 @@ export function useImageGeneration() {
     });
 
     try {
-      // 2. Call FastAPI server - returns immediately with taskId
+      // 2. Create SSE session via backend
+      const sessionResponse = await createSseSessionApiSseSessionPost();
+      if (sessionResponse.status !== 200) {
+        throw new Error('Failed to create SSE session');
+      }
+      const { sessionId, webhookUrl, sseUrl } = sessionResponse.data;
+      console.log('[ImageGeneration] SSE session created:', { sessionId, sseUrl });
+
+      // 3. Get API key and call Kie.ai directly (NOT via backend)
       const apiKey = getApiKey();
       if (!apiKey) {
         throw new Error('API key is required. Please add your Kie.ai API key.');
       }
 
-      const response = await generateImageApiGeneratePost({
-        prompt,
-        aspect_ratio: aspectRatio,
-        api_key: apiKey,
-      } satisfies GenerateRequest);
+      const kieResponse = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'z-image',
+          callBackUrl: webhookUrl,
+          input: {
+            prompt,
+            aspect_ratio: aspectRatio,
+            nsfw_checker: false
+          }
+        })
+      });
 
-      if (response.status !== 200) {
-        throw new Error('Failed to generate image');
+      if (!kieResponse.ok) {
+        throw new Error(`Kie.ai API error: ${kieResponse.status}`);
       }
 
-      const { taskId, sseUrl } = response.data;
+      const kieData = await kieResponse.json();
+      if (kieData.code !== 200) {
+        throw new Error(`Kie.ai API error: ${kieData.msg}`);
+      }
 
-      console.log('[ImageGeneration] Task created:', { taskId, sseUrl });
+      console.log('[ImageGeneration] Kie.ai task created:', kieData.data.taskId);
 
-      // 3. Listen for webhook via SSE
+      // 4. Listen for webhook via SSE
       sseManager.connect(imageId, sseUrl, {
         onMessage: async (event: WebhookEvent) => {
           console.log('[ImageGeneration] SSE event received:', { imageId, event });

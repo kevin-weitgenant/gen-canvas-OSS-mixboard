@@ -6,8 +6,7 @@ import { loadImage } from '../utils/image';
 import { sseManager, type WebhookEvent } from '../services/sseConnectionManager';
 import { DEFAULT_IMAGE_SIZE } from '../constants/imageGeneration';
 import type { ImageSource } from '../types/canvas';
-import { generateImageApiGeneratePost } from '../api/generated';
-import type { GenerateRequest } from '../api/models';
+import { createSseSessionApiSseSessionPost } from '../api/generated';
 import { getApiKey } from '../components/KeyForm';
 
 export interface PromptConfig {
@@ -115,17 +114,39 @@ export function useBatchImageGeneration() {
         const imageId = imageIds[index];
 
         try {
-          const response = await generateImageApiGeneratePost({
-            prompt: config.prompt,
-            aspect_ratio: config.aspectRatio || '1:1',
-            api_key: apiKey,
-          } satisfies GenerateRequest);
+          // Create SSE session for each image
+          const sessionResponse = await createSseSessionApiSseSessionPost();
+          if (sessionResponse.status !== 200) {
+            throw new Error('Failed to create SSE session');
+          }
+          const { webhookUrl, sseUrl } = sessionResponse.data;
 
-          if (response.status !== 200) {
-            throw new Error('Failed to generate image');
+          // Call Kie.ai directly
+          const kieResponse = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'z-image',
+              callBackUrl: webhookUrl,
+              input: {
+                prompt: config.prompt,
+                aspect_ratio: config.aspectRatio || '1:1',
+                nsfw_checker: false
+              }
+            })
+          });
+
+          if (!kieResponse.ok) {
+            throw new Error(`Kie.ai API error: ${kieResponse.status}`);
           }
 
-          const { sseUrl } = response.data;
+          const kieData = await kieResponse.json();
+          if (kieData.code !== 200) {
+            throw new Error(`Kie.ai API error: ${kieData.msg}`);
+          }
 
           // Set up SSE connection for this image
           sseManager.connect(imageId, sseUrl, {

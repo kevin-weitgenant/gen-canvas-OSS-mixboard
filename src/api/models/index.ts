@@ -8,8 +8,7 @@
 
 export * from "./chatVariationsRequest";
 export * from "./chatVariationsResponse";
-export * from "./generateRequest";
-export * from "./generateResponse";
 export * from "./hTTPValidationError";
+export * from "./sseSessionResponse";
 export * from "./validationError";
 export * from "./validationErrorCtx";

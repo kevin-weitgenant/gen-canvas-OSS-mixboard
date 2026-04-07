@@ -8,58 +8,46 @@
 import type {
   ChatVariationsRequest,
   ChatVariationsResponse,
-  GenerateRequest,
-  GenerateResponse,
   HTTPValidationError,
+  SseSessionResponse,
 } from "./models";
 
 import { customFetch } from "./mutation";
 
 /**
- * Initiate an image generation request.
+ * Create an SSE session for receiving webhook callbacks.
 
-Returns immediately with a taskId and SSE URL.
-The client should connect to the SSE URL to receive real-time updates.
- * @summary Generate Image
+The frontend will use the returned webhookUrl when calling Kie.ai directly.
+The backend never sees the user's API key.
+
+Returns:
+    SseSessionResponse: Contains sessionId, webhookUrl, and sseUrl
+ * @summary Create Sse Session
  */
-export type generateImageApiGeneratePostResponse200 = {
-  data: GenerateResponse;
+export type createSseSessionApiSseSessionPostResponse200 = {
+  data: SseSessionResponse;
   status: 200;
 };
 
-export type generateImageApiGeneratePostResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
-};
-
-export type generateImageApiGeneratePostResponseSuccess =
-  generateImageApiGeneratePostResponse200 & {
+export type createSseSessionApiSseSessionPostResponseSuccess =
+  createSseSessionApiSseSessionPostResponse200 & {
     headers: Headers;
   };
-export type generateImageApiGeneratePostResponseError =
-  generateImageApiGeneratePostResponse422 & {
-    headers: Headers;
-  };
+export type createSseSessionApiSseSessionPostResponse =
+  createSseSessionApiSseSessionPostResponseSuccess;
 
-export type generateImageApiGeneratePostResponse =
-  | generateImageApiGeneratePostResponseSuccess
-  | generateImageApiGeneratePostResponseError;
-
-export const getGenerateImageApiGeneratePostUrl = () => {
-  return `/api/generate`;
+export const getCreateSseSessionApiSseSessionPostUrl = () => {
+  return `/api/sse-session`;
 };
 
-export const generateImageApiGeneratePost = async (
-  generateRequest: GenerateRequest,
+export const createSseSessionApiSseSessionPost = async (
   options?: RequestInit,
-): Promise<generateImageApiGeneratePostResponse> => {
-  return customFetch<generateImageApiGeneratePostResponse>(
-    getGenerateImageApiGeneratePostUrl(),
+): Promise<createSseSessionApiSseSessionPostResponse> => {
+  return customFetch<createSseSessionApiSseSessionPostResponse>(
+    getCreateSseSessionApiSseSessionPostUrl(),
     {
       ...options,
       method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(generateRequest),
     },
   );
 };
