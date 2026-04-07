@@ -4,13 +4,19 @@ import { useImageGeneration } from "../hooks/useImageGeneration";
 import { useSelectedModels, useCanvasStore } from "../store/canvasStore";
 import { MODEL_Z_IMAGE } from "../constants/imageGeneration";
 import { cn } from "../lib/utils";
+import { loadImage, readFileAsDataURL } from "../utils/image";
 
 export function PromptBar() {
   const [prompt, setPrompt] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { generateImage } = useImageGeneration();
   const selectedModels = useSelectedModels();
   const setPromptCreatorModal = useCanvasStore((state) => state.setPromptCreatorModal);
+  const viewport = useCanvasStore((state) => state.viewport);
+  const addImage = useCanvasStore((state) => state.addImage);
+  const setSelectedImageIds = useCanvasStore((state) => state.setSelectedImageIds);
+  const setTool = useCanvasStore((state) => state.setTool);
 
   useEffect(() => {
     const canvas = document.querySelector("canvas");
@@ -41,9 +47,69 @@ export function PromptBar() {
     }
   };
 
+  const handlePlusClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Calculate center of viewport for positioning
+    const viewportCenterX = (-viewport.offsetX + window.innerWidth / 2 / viewport.scale);
+    const viewportCenterY = (-viewport.offsetY + window.innerHeight / 2 / viewport.scale);
+
+    const selectedIds: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file.type.startsWith("image/")) continue;
+
+      try {
+        const dataUrl = await readFileAsDataURL(file);
+        const img = await loadImage(dataUrl);
+
+        const imageId = crypto.randomUUID();
+        selectedIds.push(imageId);
+
+        addImage({
+          id: imageId,
+          type: "image",
+          src: dataUrl,
+          x: viewportCenterX - img.width / 2 + (i * 20), // Slight offset for multiple images
+          y: viewportCenterY - img.height / 2 + (i * 20),
+          width: img.width,
+          height: img.height,
+          source: { type: "uploaded" },
+        });
+      } catch (error) {
+        console.error("Error loading image:", error);
+      }
+    }
+
+    if (selectedIds.length > 0) {
+      setSelectedImageIds(selectedIds);
+      setTool("selection");
+    }
+
+    // Reset the input so the same files can be selected again
+    e.target.value = "";
+  };
+
   return (
     <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3">
-      <button className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 hover:bg-slate-50 transition-colors">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+      <button
+        onClick={handlePlusClick}
+        className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm text-slate-500 hover:bg-slate-50 transition-colors"
+      >
         <Plus className="w-5 h-5" />
       </button>
 
