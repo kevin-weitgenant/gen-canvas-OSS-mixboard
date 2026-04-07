@@ -5,7 +5,7 @@ GROQ_MODEL = "llama-3.3-70b-versatile"
 
 
 class Settings(BaseSettings):
-    kie_ai_api_key: str
+    kie_ai_api_key: str = ""
     groq_api_key: str
     server_url: str = "http://localhost:8000"
     cors_origins: str = "http://localhost:5173"

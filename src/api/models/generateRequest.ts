@@ -13,4 +13,5 @@ export interface GenerateRequest {
   prompt: string;
   aspect_ratio?: string;
   nsfw_checker?: boolean;
+  api_key: string;
 }

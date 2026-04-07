@@ -42,6 +42,7 @@ async def generate_image(req: GenerateRequest):
             prompt=req.prompt,
             aspect_ratio=req.aspect_ratio,
             callback_url=webhook_url,
+            api_key=req.api_key,
             nsfw_checker=req.nsfw_checker
         )
         print(f"[Generate] Z-Image task created: {z_task_id}")

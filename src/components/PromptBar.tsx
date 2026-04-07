@@ -5,6 +5,8 @@ import { useSelectedModels, useCanvasStore } from "../store/canvasStore";
 import { MODEL_Z_IMAGE } from "../constants/imageGeneration";
 import { cn } from "../lib/utils";
 import { loadImage, readFileAsDataURL } from "../utils/image";
+import { ApiKeyPill } from "./ApiKeyPill";
+import { handleImageGenerationError } from "../utils/errorHandler";
 
 export function PromptBar() {
   const [prompt, setPrompt] = useState("");
@@ -34,10 +36,17 @@ export function PromptBar() {
     if (!canGenerate) return;
 
     // Clear input immediately for better UX
+    const currentPrompt = prompt;
     setPrompt("");
 
-    // Each request is independent - parallel generation enabled
-    await generateImage(prompt);
+    try {
+      // Each request is independent - parallel generation enabled
+      await generateImage(currentPrompt);
+    } catch (error) {
+      // Restore prompt on error so user can retry
+      setPrompt(currentPrompt);
+      handleImageGenerationError(error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -153,6 +162,8 @@ export function PromptBar() {
           <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
         </button>
       </div>
+
+      <ApiKeyPill />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { CountSlider } from './variation-modal/CountSlider';
 import { ModelList } from './variation-modal/ModelList';
 import { createPromptVariationsApiChatVariationsPost } from '../api/generated';
 import { useBatchImageGeneration } from '../hooks/useBatchImageGeneration';
+import { handleImageGenerationError } from '../utils/errorHandler';
 
 export interface PromptEntry {
   id: string;
@@ -179,9 +180,7 @@ export function BaseVariationsModal({
       onClose();
     } catch (error) {
       console.error('Failed to generate images:', error);
-      toast.error('Failed to start image generation', {
-        description: 'Please try again.',
-      });
+      handleImageGenerationError(error);
     } finally {
       setGeneratingImages(false);
     }

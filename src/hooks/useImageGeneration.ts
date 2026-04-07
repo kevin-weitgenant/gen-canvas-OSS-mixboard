@@ -7,6 +7,7 @@ import { DEFAULT_IMAGE_SIZE } from '../constants/imageGeneration';
 import type { ImageSource } from '../types/canvas';
 import { generateImageApiGeneratePost } from '../api/generated';
 import type { GenerateRequest } from '../api/models';
+import { getApiKey } from '../components/KeyForm';
 
 export function useImageGeneration() {
   const { addImage, updateImage, viewport } = useCanvasStore();
@@ -39,9 +40,15 @@ export function useImageGeneration() {
 
     try {
       // 2. Call FastAPI server - returns immediately with taskId
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        throw new Error('API key is required. Please add your Kie.ai API key.');
+      }
+
       const response = await generateImageApiGeneratePost({
         prompt,
         aspect_ratio: aspectRatio,
+        api_key: apiKey,
       } satisfies GenerateRequest);
 
       if (response.status !== 200) {
@@ -92,7 +99,8 @@ export function useImageGeneration() {
         isLoading: false,
         loadingState: 'failed',
       });
-      return null;
+      // Re-throw error so caller can handle UI feedback
+      throw error;
     }
   };
 

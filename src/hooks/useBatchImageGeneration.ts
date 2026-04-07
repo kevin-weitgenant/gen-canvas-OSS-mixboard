@@ -8,6 +8,7 @@ import { DEFAULT_IMAGE_SIZE } from '../constants/imageGeneration';
 import type { ImageSource } from '../types/canvas';
 import { generateImageApiGeneratePost } from '../api/generated';
 import type { GenerateRequest } from '../api/models';
+import { getApiKey } from '../components/KeyForm';
 
 export interface PromptConfig {
   prompt: string;
@@ -67,6 +68,12 @@ export function useBatchImageGeneration() {
     async (configs: PromptConfig[]): Promise<string[]> => {
       if (configs.length === 0) return [];
 
+      // Validate API key before starting batch
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        throw new Error('API key is required. Please add your Kie.ai API key.');
+      }
+
       // Calculate grid positions for all images
       const positions = calculateGridPositions(
         viewport,
@@ -111,6 +118,7 @@ export function useBatchImageGeneration() {
           const response = await generateImageApiGeneratePost({
             prompt: config.prompt,
             aspect_ratio: config.aspectRatio || '1:1',
+            api_key: apiKey,
           } satisfies GenerateRequest);
 
           if (response.status !== 200) {

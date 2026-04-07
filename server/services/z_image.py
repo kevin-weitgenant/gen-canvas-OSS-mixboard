@@ -17,6 +17,7 @@ async def create_z_image_task(
     prompt: str,
     aspect_ratio: str,
     callback_url: str,
+    api_key: str,
     nsfw_checker: bool = False
 ) -> str:
     """Create a Z-Image generation task with webhook callback."""
@@ -36,7 +37,7 @@ async def create_z_image_task(
             f"{Z_IMAGE_API_BASE}{CREATE_TASK_ENDPOINT}",
             json=payload,
             headers={
-                "Authorization": f"Bearer {settings.kie_ai_api_key}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json"
             },
             timeout=30.0

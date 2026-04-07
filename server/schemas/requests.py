@@ -8,6 +8,7 @@ class GenerateRequest(BaseModel):
     prompt: str
     aspect_ratio: str = "1:1"
     nsfw_checker: bool = False
+    api_key: str
 
 
 class ChatVariationsRequest(BaseModel):

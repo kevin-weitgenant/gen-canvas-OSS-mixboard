@@ -113,6 +113,9 @@ function useCanvasImages(
         return Promise.resolve();
       }
 
+      // Skip images with empty src to prevent uncaught load errors
+      if (!toRender.src) return Promise.resolve();
+
       return loadImage(toRender.src).then((img) => {
         const ctx = contextRef.current;
         if (!ctx) return;
