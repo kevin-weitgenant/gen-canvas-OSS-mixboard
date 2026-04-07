@@ -5,6 +5,7 @@ import { PromptInstructionInput } from './PromptInstructionInput';
 import { CountSlider } from './variation-modal/CountSlider';
 import { ModelList } from './variation-modal/ModelList';
 import { createPromptVariationsApiChatVariationsPost } from '../api/generated';
+import { useBatchImageGeneration } from '../hooks/useBatchImageGeneration';
 
 export interface PromptEntry {
   id: string;
@@ -43,7 +44,7 @@ const SUFFIXES = [
 ];
 
 function makeEntry(text = ''): PromptEntry {
-  return { id: crypto.randomUUID(), text, models: ['flux-dev'] };
+  return { id: crypto.randomUUID(), text, models: ['z-image'] };
 }
 
 export function BaseVariationsModal({
@@ -59,6 +60,7 @@ export function BaseVariationsModal({
   variationLabel = 'Variation',
   instructionLabel,
 }: BaseVariationsModalProps) {
+  const { generateBatchImages } = useBatchImageGeneration();
   const isGenerated = isInitiallyGenerated && !!initialBasePrompt;
   const [basePrompt, setBasePrompt] = useState(initialBasePrompt || DEFAULT_PROMPT);
 
@@ -79,6 +81,7 @@ export function BaseVariationsModal({
   const [count, setCount] = useState(3);
   const [prompts, setPrompts] = useState<PromptEntry[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [generatingImages, setGeneratingImages] = useState(false);
   const [generated, setGenerated] = useState(false);
 
   // Drag state
@@ -145,6 +148,42 @@ export function BaseVariationsModal({
       setGenerated(true);
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function handleGenerateImages() {
+    if (prompts.length === 0) return;
+
+    setGeneratingImages(true);
+
+    try {
+      // Collect all prompts from the entries
+      const configs = prompts.flatMap((entry) => {
+        // For now, each prompt generates one image (Z-Image only)
+        // In the future, we might expand by entry.models.length
+        return entry.text.trim()
+          ? [{ prompt: entry.text, aspectRatio: '1:1' as const }]
+          : [];
+      });
+
+      if (configs.length === 0) {
+        toast.error('No valid prompts to generate', {
+          description: 'Please add or edit prompts before generating images.',
+        });
+        return;
+      }
+
+      // Generate all images
+      await generateBatchImages(configs);
+
+      onClose();
+    } catch (error) {
+      console.error('Failed to generate images:', error);
+      toast.error('Failed to start image generation', {
+        description: 'Please try again.',
+      });
+    } finally {
+      setGeneratingImages(false);
     }
   }
 
@@ -351,11 +390,16 @@ export function BaseVariationsModal({
               Cancel
             </button>
             <button
-              disabled={totalImages === 0}
+              onClick={handleGenerateImages}
+              disabled={totalImages === 0 || generatingImages}
               className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold text-white bg-blue-500 border-none cursor-pointer transition-all hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Images size={13} />
-              {totalImages > 0 ? `Generate ${totalImages} images` : 'Generate images'}
+              <Images size={13} className={generatingImages ? 'animate-spin' : ''} />
+              {generatingImages
+                ? 'Starting...'
+                : totalImages > 0
+                  ? `Generate ${totalImages} images`
+                  : 'Generate images'}
             </button>
           </div>
         </footer>

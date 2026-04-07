@@ -62,7 +62,15 @@ export function ModelSelector() {
             display: none;
           }
         `}</style>
-        {KIE_AI_MODELS.map((model) => {
+        {[...KIE_AI_MODELS].sort((a, b) => {
+          if (a.id === 'z-image') return -1;
+          if (b.id === 'z-image') return 1;
+          const aEnabled = a.id === ENABLED_MODEL;
+          const bEnabled = b.id === ENABLED_MODEL;
+          if (aEnabled && !bEnabled) return -1;
+          if (!aEnabled && bEnabled) return 1;
+          return a.name.localeCompare(b.name);
+        }).map((model) => {
           const isSelected = selectedModels.includes(model.id);
           const isEnabled = model.id === ENABLED_MODEL;
           return (

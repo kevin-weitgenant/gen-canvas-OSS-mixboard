@@ -18,9 +18,20 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
 
   const selected = MODELS.find((m) => m.value === value);
 
+  // Sort models: z-image first, then enabled, then disabled
+  const sortedModels = [...MODELS].sort((a, b) => {
+    if (a.value === 'z-image') return -1;
+    if (b.value === 'z-image') return 1;
+    const aEnabled = a.value === ENABLED_MODEL;
+    const bEnabled = b.value === ENABLED_MODEL;
+    if (aEnabled && !bEnabled) return -1;
+    if (!aEnabled && bEnabled) return 1;
+    return a.label.localeCompare(b.label);
+  });
+
   const filtered = query.trim()
-    ? MODELS.filter((m) => m.label.toLowerCase().includes(query.toLowerCase()) || m.tag.toLowerCase().includes(query.toLowerCase()))
-    : MODELS;
+    ? sortedModels.filter((m) => m.label.toLowerCase().includes(query.toLowerCase()) || m.tag.toLowerCase().includes(query.toLowerCase()))
+    : sortedModels;
 
   // Handle outside click - check both button and dropdown (for portal)
   useEffect(() => {
