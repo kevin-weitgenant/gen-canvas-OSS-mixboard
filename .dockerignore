@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build outputs
+dist/
+build/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.*
+.envrc
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Orval cache
+.orval-cache/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.md
+!README.md
+*.log
