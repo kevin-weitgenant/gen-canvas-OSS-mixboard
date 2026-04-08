@@ -19,12 +19,21 @@ COPY server/pyproject.toml server/uv.lock* ./server/
 WORKDIR /app/server
 RUN uv sync --frozen --no-dev --compile-bytecode
 
-# Copy frontend dependency files
+# Copy frontend dependency files (for caching)
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
-# Install frontend dependencies and build
-RUN pnpm install --frozen-lockfile && pnpm build
+# Install frontend dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy frontend source code (after deps for better caching)
+COPY tsconfig*.json vite.config.ts index.html ./
+COPY src ./src
+COPY public ./public
+COPY tailwind.config.ts postcss.config.js ./
+
+# Build frontend
+RUN pnpm build
 
 # ===== RUNTIME STAGE =====
 FROM python:3.12-slim-bookworm
