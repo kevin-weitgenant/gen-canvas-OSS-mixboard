@@ -19,6 +19,13 @@ COPY server/pyproject.toml server/uv.lock* ./server/
 WORKDIR /app/server
 RUN uv sync --frozen --no-dev --compile-bytecode
 
+# Copy server source code (main.py, config.py, routers/, etc.)
+WORKDIR /app
+COPY server/*.py ./server/
+COPY server/routers ./server/routers
+COPY server/schemas ./server/schemas
+COPY server/services ./server/services
+
 # Copy frontend dependency files (for caching)
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
@@ -38,19 +45,20 @@ RUN pnpm build
 # ===== RUNTIME STAGE =====
 FROM python:3.12-slim-bookworm
 
-WORKDIR /app/server
+WORKDIR /app
 
 # Copy virtual environment from builder
-COPY --from=builder /app/server/.venv /app/server/.venv
+COPY --from=builder /app/server/.venv /app/.venv
 
 # Copy server code (includes main.py, routers/, config.py, etc.)
+# Note: copy to /app to avoid nested /app/server/server structure
 COPY --from=builder /app/server /app/server
 
 # Copy built frontend
 COPY --from=builder /app/dist /app/dist
 
 # Set environment to use the venv
-ENV PATH="/app/server/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH="/app/server"
 
@@ -61,5 +69,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
 
-# Run the application (using main:app since WORKDIR is /app/server)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application
+CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]
