@@ -19,7 +19,7 @@ COPY server/pyproject.toml server/uv.lock* ./server/
 WORKDIR /app/server
 RUN uv sync --frozen --no-dev --compile-bytecode
 
-# Copy server source code (main.py, config.py, routers/, etc.)
+# Copy server source code
 WORKDIR /app
 COPY server/*.py ./server/
 COPY server/routers ./server/routers
@@ -27,20 +27,22 @@ COPY server/schemas ./server/schemas
 COPY server/services ./server/services
 
 # Copy frontend dependency files (for caching)
-WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Install frontend dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy frontend source code (after deps for better caching)
+# Copy frontend source code
 COPY tsconfig*.json vite.config.ts index.html ./
 COPY src ./src
 COPY public ./public
 COPY tailwind.config.ts postcss.config.js ./
 
-# Build frontend
-RUN pnpm build
+# ✅ Copy production env so Vite can use it
+COPY .env.production .env.production
+
+# Build frontend (Vite will automatically use .env.production)
+RUN pnpm build --mode production
 
 # ===== RUNTIME STAGE =====
 FROM python:3.12-slim-bookworm
@@ -50,8 +52,7 @@ WORKDIR /app
 # Copy virtual environment from builder
 COPY --from=builder /app/server/.venv /app/.venv
 
-# Copy server code (includes main.py, routers/, config.py, etc.)
-# Note: copy to /app to avoid nested /app/server/server structure
+# Copy server code
 COPY --from=builder /app/server /app/server
 
 # Copy built frontend

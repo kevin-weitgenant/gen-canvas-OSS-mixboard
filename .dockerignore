@@ -16,7 +16,7 @@ build/
 
 # Environment files
 .env
-.env.*
+
 .envrc
 
 # IDE
