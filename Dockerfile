@@ -38,12 +38,12 @@ RUN pnpm build
 # ===== RUNTIME STAGE =====
 FROM python:3.12-slim-bookworm
 
-WORKDIR /app
+WORKDIR /app/server
 
 # Copy virtual environment from builder
 COPY --from=builder /app/server/.venv /app/server/.venv
 
-# Copy server code
+# Copy server code (includes main.py, routers/, config.py, etc.)
 COPY --from=builder /app/server /app/server
 
 # Copy built frontend
@@ -52,6 +52,7 @@ COPY --from=builder /app/dist /app/dist
 # Set environment to use the venv
 ENV PATH="/app/server/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH="/app/server"
 
 # Expose the port FastAPI runs on
 EXPOSE 8000
@@ -60,5 +61,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
 
-# Run the application
-CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (using main:app since WORKDIR is /app/server)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
