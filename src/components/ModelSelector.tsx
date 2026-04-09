@@ -63,8 +63,8 @@ export function ModelSelector() {
           }
         `}</style>
         {[...KIE_AI_MODELS].sort((a, b) => {
-          if (a.id === 'z-image') return -1;
-          if (b.id === 'z-image') return 1;
+          if (a.id === 'nano-banana-2') return -1;
+          if (b.id === 'nano-banana-2') return 1;
           const aEnabled = a.id === ENABLED_MODEL;
           const bEnabled = b.id === ENABLED_MODEL;
           if (aEnabled && !bEnabled) return -1;

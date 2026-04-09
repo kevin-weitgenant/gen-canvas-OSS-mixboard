@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ArrowRight, Plus, Sparkles } from "lucide-react";
 import { useImageGeneration } from "../hooks/useImageGeneration";
 import { useSelectedModels, useCanvasStore } from "../store/canvasStore";
-import { MODEL_Z_IMAGE } from "../constants/imageGeneration";
+import { MODEL_NANO_BANANA_2 } from "../constants/imageGeneration";
 import { cn } from "../lib/utils";
 import { loadImage, readFileAsDataURL } from "../utils/image";
 import { ApiKeyPill } from "./ApiKeyPill";
@@ -30,7 +30,7 @@ export function PromptBar() {
     return () => canvas?.removeEventListener("mousedown", handleCanvasClick);
   }, []);
 
-  const canGenerate = prompt.trim() && selectedModels.includes(MODEL_Z_IMAGE);
+  const canGenerate = prompt.trim() && selectedModels.includes(MODEL_NANO_BANANA_2);
 
   const handleSubmit = async () => {
     if (!canGenerate) return;

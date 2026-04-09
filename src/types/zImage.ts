@@ -1,7 +1,7 @@
 export type TaskState = 'waiting' | 'queuing' | 'generating' | 'success' | 'fail';
 
 export interface CreateTaskRequest {
-  model: 'z-image';
+  model: 'nano-banana-2';
   input: {
     prompt: string;
     aspect_ratio: '1:1' | '4:3' | '3:4' | '16:9' | '9:16';

@@ -99,7 +99,7 @@ export const createPromptVariationsApiChatVariationsPost = async (
 };
 
 /**
- * Receive webhook callbacks from Z-Image API.
+ * Receive webhook callbacks from Nano Banana 2 API.
 
 Forwards the payload to the appropriate SSE connection.
  * @summary Webhook Callback

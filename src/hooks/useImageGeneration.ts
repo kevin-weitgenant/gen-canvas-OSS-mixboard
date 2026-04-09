@@ -59,7 +59,7 @@ export function useImageGeneration() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'z-image',
+          model: 'nano-banana-2',
           callBackUrl: webhookUrl,
           input: {
             prompt,

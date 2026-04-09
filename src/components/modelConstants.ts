@@ -41,7 +41,6 @@ export const KIE_AI_MODELS: CoreModel[] = [
   // Standalone & Other Models
   { id: "ideogram-v3", name: "Ideogram V3", color: "#EF4444" },
   { id: "grok-imagine", name: "Grok Imagine", color: "#6366F1" },
-  { id: "z-image", name: "Z-Image", color: "#14B8A6" },
 ];
 
 // Tag categories mapped to model IDs
@@ -66,7 +65,6 @@ const MODEL_TAGS: Record<string, string> = {
   "wan-2.7-image-pro": "Wan",
   "ideogram-v3": "Ideogram",
   "grok-imagine": "Grok",
-  "z-image": "Z-Image",
 };
 
 // MODELS array for ModelCombobox - derived from KIE_AI_MODELS
@@ -86,11 +84,10 @@ export const TAG_STYLES: Record<string, string> = {
   "Wan": "bg-cyan-50 text-cyan-700 border-cyan-200",
   "Ideogram": "bg-red-50 text-red-700 border-red-200",
   "Grok": "bg-indigo-50 text-indigo-700 border-indigo-200",
-  "Z-Image": "bg-teal-50 text-teal-700 border-teal-200",
   "Other": "bg-slate-100 text-slate-600 border-slate-200",
 };
 
 export const DEFAULT_TAG_STYLE = "bg-slate-100 text-slate-600 border-slate-200";
 
 // Currently enabled model - only this model can be selected
-export const ENABLED_MODEL = "z-image";
+export const ENABLED_MODEL = "nano-banana-2";

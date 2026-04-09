@@ -1,4 +1,4 @@
-"""Webhook router for receiving callbacks from Z-Image API."""
+"""Webhook router for receiving callbacks from Nano Banana 2 API."""
 
 from fastapi import APIRouter, Request
 
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/{task_id}")
 async def webhook_callback(task_id: str, request: Request):
     """
-    Receive webhook callbacks from Z-Image API.
+    Receive webhook callbacks from Nano Banana 2 API.
 
     Forwards the payload to the appropriate SSE connection.
     """
@@ -28,7 +28,7 @@ async def webhook_callback(task_id: str, request: Request):
 
     if not sent:
         # SSE connection may have closed - log but return 200
-        # to avoid Z-Image retry attempts
+        # to avoid Nano Banana 2 retry attempts
         print(f"[Webhook] Warning: SSE connection not found for task: {task_id}")
 
     return {"status": "received", "taskId": task_id}

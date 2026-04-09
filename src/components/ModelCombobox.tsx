@@ -18,10 +18,10 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
 
   const selected = MODELS.find((m) => m.value === value);
 
-  // Sort models: z-image first, then enabled, then disabled
+  // Sort models: nano-banana-2 first, then enabled, then disabled
   const sortedModels = [...MODELS].sort((a, b) => {
-    if (a.value === 'z-image') return -1;
-    if (b.value === 'z-image') return 1;
+    if (a.value === 'nano-banana-2') return -1;
+    if (b.value === 'nano-banana-2') return 1;
     const aEnabled = a.value === ENABLED_MODEL;
     const bEnabled = b.value === ENABLED_MODEL;
     if (aEnabled && !bEnabled) return -1;

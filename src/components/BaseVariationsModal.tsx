@@ -45,7 +45,7 @@ const SUFFIXES = [
 ];
 
 function makeEntry(text = ''): PromptEntry {
-  return { id: crypto.randomUUID(), text, models: ['z-image'] };
+  return { id: crypto.randomUUID(), text, models: ['nano-banana-2'] };
 }
 
 export function BaseVariationsModal({
@@ -160,7 +160,7 @@ export function BaseVariationsModal({
     try {
       // Collect all prompts from the entries
       const configs = prompts.flatMap((entry) => {
-        // For now, each prompt generates one image (Z-Image only)
+        // For now, each prompt generates one image (Nano Banana 2 only)
         // In the future, we might expand by entry.models.length
         return entry.text.trim()
           ? [{ prompt: entry.text, aspectRatio: '1:1' as const }]

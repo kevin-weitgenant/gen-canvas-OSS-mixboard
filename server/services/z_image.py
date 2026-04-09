@@ -1,29 +1,29 @@
-"""Z-Image API service for creating image generation tasks."""
+"""Nano Banana 2 API service for creating image generation tasks."""
 
 import httpx
 
 from config import settings  # type: ignore
 
 
-class ZImageAPIError(RuntimeError):
-    """Exception raised when the Z-Image API returns an error."""
+class NanoBananaAPIError(RuntimeError):
+    """Exception raised when the Nano Banana 2 API returns an error."""
 
 
-Z_IMAGE_API_BASE = "https://api.kie.ai"
+NANO_BANANA_API_BASE = "https://api.kie.ai"
 CREATE_TASK_ENDPOINT = "/api/v1/jobs/createTask"
 
 
-async def create_z_image_task(
+async def create_nano_banana_task(
     prompt: str,
     aspect_ratio: str,
     callback_url: str,
     api_key: str,
     nsfw_checker: bool = False
 ) -> str:
-    """Create a Z-Image generation task with webhook callback."""
+    """Create a Nano Banana 2 generation task with webhook callback."""
 
     payload = {
-        "model": "z-image",
+        "model": "nano-banana-2",
         "callBackUrl": callback_url,
         "input": {
             "prompt": prompt,
@@ -34,7 +34,7 @@ async def create_z_image_task(
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"{Z_IMAGE_API_BASE}{CREATE_TASK_ENDPOINT}",
+            f"{NANO_BANANA_API_BASE}{CREATE_TASK_ENDPOINT}",
             json=payload,
             headers={
                 "Authorization": f"Bearer {api_key}",
@@ -46,6 +46,6 @@ async def create_z_image_task(
 
         result = response.json()
         if result.get("code") != 200:
-            raise ZImageAPIError(f"Z-Image API error: {result.get('msg')}")
+            raise NanoBananaAPIError(f"Nano Banana 2 API error: {result.get('msg')}")
 
         return result["data"]["taskId"]
